@@ -5,7 +5,7 @@ import crypto from "crypto";
 export class InstacartClient {
   constructor(private cookieHeader: string) {}
 
-  private async graphql(operationName: string, variables: any) {
+  private async graphql(operationName: string, variables: any, hash: string) {
     const url = "https://www.instacart.com/graphql";
 
     const res = await fetch(url, {
@@ -37,8 +37,7 @@ export class InstacartClient {
         extensions: {
           persistedQuery: {
             version: 1,
-            sha256Hash:
-              "f08e542882bd166bf16c6dc40fa05109e8e3e0bcadc60235c9fb5cb547638327",
+            sha256Hash: hash,
           },
         },
       }),
@@ -66,6 +65,7 @@ export class InstacartClient {
       {
         postalCode,
       },
+      "026db6726eb53a0e36f0b1368de6c274c15105ec0ae94a5ae73568b533016801",
     );
 
     const loc = data?.data?.updateUserLocation;
@@ -86,22 +86,27 @@ export class InstacartClient {
     postalCode: string;
     shopIds: string[];
     pageViewId: string;
-    zoneId: string;
+    //zoneId: string;
     first?: number;
   }) {
-    //const location = await this.resolveLocation(params.postalCode);
+    const location = await this.resolveLocation(params.postalCode);
 
-    const data = await this.graphql("SearchCrossRetailerGroupResults", {
-      searchSource: "cross_retailer_search",
-      query: params.query,
-      postalCode: params.postalCode,
-      shopIds: params.shopIds,
-      zoneId: params.zoneId,
-      shopId: "0",
-      first: params.first ?? 10,
-      disableAutocorrect: false,
-      includeDebugInfo: false,
-    });
+    const data = await this.graphql(
+      "SearchCrossRetailerGroupResults",
+      {
+        searchSource: "cross_retailer_search",
+        query: params.query,
+        postalCode: params.postalCode,
+        shopIds: params.shopIds,
+        //zoneId: params.zoneId,
+        zoneId: location.zoneId,
+        shopId: "0",
+        first: params.first ?? 10,
+        disableAutocorrect: false,
+        includeDebugInfo: false,
+      },
+      "f08e542882bd166bf16c6dc40fa05109e8e3e0bcadc60235c9fb5cb547638327",
+    );
 
     const groups = data?.data?.searchCrossRetailerGroupResults?.results ?? [];
 

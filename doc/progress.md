@@ -30,3 +30,5 @@ https://www.instacart.com/graphql?operationName=ExpressFulfillmentValueProps the
 https://www.instacart.com/graphql?operationName=UpdateUserLocation the response to this contains zone id and postal code.
 
 Getting an authentication error trying to call UpdateUserLocation.
+
+Wrote a script to store cookie, manually need to copy cookie from chrome dev tools and run it once to save the cookie. Zone id is no longer hardcoded, uses UpdateUserLocation to retrieve zone id.
