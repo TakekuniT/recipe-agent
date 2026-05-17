@@ -16,3 +16,17 @@ ttanemori@Mac recipe-agent %
 I think I hit a bot protection measure of allrecipe.com since I got a 403 error with proper headers. Bypassed anti bot protection by using playwright, generated recipes from searchRecipes. getRecipes is still broken, browseCategories seems to be working. These functions need to be modified to adhere tot he specs later.
 
 Briefly looked at instacart.com, seems to have an exposed graphql API.
+
+https://www.instacart.com/graphql?operationName=CreateUserSessionFromVerificationCode the response to this request has an auth token. Tried writing it in code, got 400 errors, fixed it, but got empty arrays.
+
+Copied the cURL and worked on postman but not on the code yet. Was missing a few headers, code works and outputs search results. Only issue is hardcoded shopIds, postalCode, zoneId, instacart cookie, auth token, and pageViewId.
+
+https://www.instacart.com/graphql?operationName=CreateUserSessionFromVerificationCode the response to this request has an auth token.
+
+https://www.instacart.com/graphql?operationName=ShopTags the response to this request contains shop ids. Turns out to call this request, you need to pass in shopIds, so this request cannot be used to get shopIds.
+
+https://www.instacart.com/graphql?operationName=ExpressFulfillmentValueProps the response to this contains retailer ids, not sure if this is related to shop ids.
+
+https://www.instacart.com/graphql?operationName=UpdateUserLocation the response to this contains zone id and postal code.
+
+Getting an authentication error trying to call UpdateUserLocation.
