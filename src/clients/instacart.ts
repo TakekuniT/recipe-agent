@@ -71,6 +71,7 @@ export class InstacartClient {
     const loc = data?.data?.updateUserLocation;
 
     return {
+      addressId: loc?.addressId,
       postalCode: loc?.postalCode,
       zoneId: loc?.zoneId,
 
@@ -81,15 +82,56 @@ export class InstacartClient {
     };
   }
 
+  async resolveShopIds(params: {
+    postalCode: string;
+    zoneId: string;
+    addressId?: string;
+    latitude: number;
+    longitude: number;
+    pageViewId: string;
+  }) {
+    const data = await this.graphql(
+      "ShopCollectionUnscoped",
+      {
+        postalCode: params.postalCode,
+        coordinates: {
+          latitude: params.latitude,
+          longitude: params.longitude,
+        },
+        addressId: params.addressId ?? null,
+      },
+      "814aa179ab4aaf604c50f65150a589ce17e048747de18a1e67c6ad8af626f7a8",
+    );
+
+    const collections = data?.data?.shopCollection?.shops ?? [];
+    //console.log("collections", collections);
+
+    const shopIds = collections
+      .map((s: any) => s?.id ?? s?.shopId)
+      .filter(Boolean);
+
+    return {
+      shopIds: Array.from(new Set(shopIds)),
+    };
+  }
+
   async searchProducts(params: {
     query: string;
     postalCode: string;
-    shopIds: string[];
+    //shopIds: string[];
     pageViewId: string;
     //zoneId: string;
     first?: number;
   }) {
     const location = await this.resolveLocation(params.postalCode);
+    const shopIds = await this.resolveShopIds({
+      postalCode: params.postalCode,
+      zoneId: location.zoneId,
+      addressId: location.addressId,
+      latitude: location.coordinates.latitude,
+      longitude: location.coordinates.longitude,
+      pageViewId: params.pageViewId,
+    });
 
     const data = await this.graphql(
       "SearchCrossRetailerGroupResults",
@@ -97,8 +139,7 @@ export class InstacartClient {
         searchSource: "cross_retailer_search",
         query: params.query,
         postalCode: params.postalCode,
-        shopIds: params.shopIds,
-        //zoneId: params.zoneId,
+        shopIds: shopIds.shopIds,
         zoneId: location.zoneId,
         shopId: "0",
         first: params.first ?? 10,

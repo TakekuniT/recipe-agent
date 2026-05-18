@@ -1,7 +1,9 @@
-May 16
+## May 16
+
 Spent a few hours working on the ingredientParser.ts file and wrote a working test file for it. I also briefly looked at allrecipe.com and its network requests. So far, it is hiding its recipe API endpoint. I still cannot see any json search results or structured recipe object within the network requests.
 
-May 17
+## May 17
+
 Did some research, this video was useful https://www.youtube.com/watch?v=mbrX1_CVG-0.
 Looks like allrecipe.com is using a server side rendering and returning an HTML rather than a public JSON API call. Server renders HTML recipe cards, browser receives full HTML page, and then small JS fragments hydrate UI interactions. Could not find any API calls.
 
@@ -32,3 +34,5 @@ https://www.instacart.com/graphql?operationName=UpdateUserLocation the response 
 Getting an authentication error trying to call UpdateUserLocation.
 
 Wrote a script to store cookie, manually need to copy cookie from chrome dev tools and run it once to save the cookie. Zone id is no longer hardcoded, uses UpdateUserLocation to retrieve zone id.
+
+https://www.instacart.com/graphql?operationName=ShopCollectionUnscoped seems to have the shop ids in the response. Successfully called this request to get shop ids, no longer need to hardcode shop ids.
