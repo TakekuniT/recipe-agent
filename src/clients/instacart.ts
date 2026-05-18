@@ -521,4 +521,75 @@ export class InstacartClient {
 
     throw new Error(`Product ${productId} not found in any shop`);
   }
+
+  async getCartId(): Promise<string> {
+    const data = await this.graphql(
+      "PersonalActiveCarts",
+      {},
+      "eac9d17bd45b099fbbdabca2e111acaf2a4fa486f2ce5bc4e8acbab2f31fd8c0",
+    );
+    //console.log("data", data);
+
+    const carts = data?.data?.userCarts?.carts;
+
+    if (!carts || carts.length === 0) {
+      throw new Error("No active carts found for user");
+    }
+
+    //console.log("carts", carts);
+    const activeCart = carts[0];
+
+    if (!activeCart?.id) {
+      throw new Error("Cart found but missing cart id");
+    }
+
+    return activeCart.id;
+  }
+
+  async getCart(params: { zip_code?: string; store?: string } = {}) {
+    // params may be unnecessary
+    const cartId = await this.getCartId();
+
+    const data = await this.graphql(
+      "UserCart",
+      { id: cartId },
+      "32a2c15d1cbda8f819ec107bacd83bc45add7e783d29cd0595b02254650918c1",
+    );
+
+    const items = data?.data?.userCart?.cartItemCollection?.cartItems ?? [];
+    let subtotal = 0.0;
+    const normalizedItems = await Promise.all(
+      items.map(async (item: any) => {
+        const product = item.basketProduct;
+
+        const productId = product?.productId ?? null;
+        const name = product?.name ?? null;
+        const quantity = item.quantity ?? 1;
+
+        const products = await this.getProductDetails({
+          product_id: productId,
+        });
+
+        const productDetails = products[0];
+        const unitPrice = Number(productDetails?.price?.replace("$", ""));
+
+        const lineTotal = unitPrice * quantity;
+        subtotal += lineTotal;
+
+        return {
+          product_id: productId,
+          name,
+          quantity,
+          unit_price: unitPrice,
+          line_total: lineTotal,
+        };
+      }),
+    );
+
+    return {
+      items: normalizedItems,
+      item_count: normalizedItems.length,
+      subtotal: subtotal,
+    };
+  }
 }

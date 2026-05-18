@@ -53,6 +53,14 @@ async function main() {
   console.log("=== GET PRODUCTS ===");
   const product = await client.getProductDetails({ product_id: "18316911" });
   console.dir(product, { depth: 5 });
+
+  console.log("=== GET CART ID ===");
+  const cartId = await client.getCartId();
+  console.log(cartId);
+
+  console.log("=== GET CART ===");
+  const cart = await client.getCart({});
+  console.dir(cart, { depth: 5 });
 }
 
 main().catch(console.error);
