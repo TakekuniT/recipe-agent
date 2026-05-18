@@ -38,3 +38,10 @@ Wrote a script to store cookie, manually need to copy cookie from chrome dev too
 https://www.instacart.com/graphql?operationName=ShopCollectionUnscoped seems to have the shop ids in the response. Successfully called this request to get shop ids, no longer need to hardcode shop ids.
 
 https://www.instacart.com/graphql?operationName=UserAddresses seems to have address information without any inputs. Made a new location resolve function that uses this request because it does not require any inputs. Missing zone id in input, so the two resolve functions are still both in use.
+
+SearchProducts is working.
+
+https://www.instacart.com/graphql?operationName=ItemDetailData the response to this request has details of the product, but missing several fields. Contains availability, name, product image, nutrition, ingredients, and details. Missing store name, unit size/weight, price, category.
+Retrieve full product details by product ID or URL: price, unit size/weight, availability, category, product image URL, store name.
+
+Looked at the specs again, need to redo some parts of SearchProducts to fill in the missing fields.

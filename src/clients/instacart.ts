@@ -1,7 +1,5 @@
 // searchProducts, getProductDetails, listDepartments, addToCart, getCart, removeFromCart
 
-import crypto from "crypto";
-
 export class InstacartClient {
   constructor(private cookieHeader: string) {}
 
@@ -144,14 +142,7 @@ export class InstacartClient {
     };
   }
 
-  async searchProducts(params: {
-    query: string;
-    //postalCode: string;
-    //shopIds: string[];
-    // pageViewId: string;
-    //zoneId: string;
-    first?: number;
-  }) {
+  async searchProducts(params: { query: string; first?: number }) {
     //const location = await this.resolveLocation(params.postalCode);
     const location2 = await this.resolveLocation2();
     const location = await this.resolveLocation(location2.postalCode);
@@ -172,7 +163,7 @@ export class InstacartClient {
         shopIds: shopIds.shopIds,
         zoneId: location.zoneId,
         shopId: "0",
-        first: params.first,
+        first: params.first ?? 10,
         disableAutocorrect: false,
         includeDebugInfo: false,
       },
@@ -180,10 +171,23 @@ export class InstacartClient {
     );
 
     const groups = data?.data?.searchCrossRetailerGroupResults?.results ?? [];
-
+    // console.log("groups", groups);
+    // return groups.flatMap((g: any) =>
+    //   (g.items ?? []).map((item: any) => ({
+    //     productId: item.productId,
+    //     name: item.name,
+    //     brand: item.brandName,
+    //     size: item.size,
+    //     price: item.price?.viewSection?.priceString ?? null,
+    //     imageUrl: item.viewSection?.itemImage?.url ?? null,
+    //     available: item.availability?.available,
+    //   })),
+    // );
     return groups.flatMap((g: any) =>
-      (g.items ?? []).map((item: any) => ({
+      (g.items ?? []).map((item: any, idx: number) => ({
         productId: item.productId,
+        itemId: g.itemIds?.[idx] ?? null,
+        shopId: g.shopId,
         name: item.name,
         brand: item.brandName,
         size: item.size,
@@ -192,5 +196,59 @@ export class InstacartClient {
         available: item.availability?.available,
       })),
     );
+  }
+
+  async getProductDetails(params: { id: string; shopId: string }) {
+    const data = await this.graphql(
+      "ItemDetailData",
+      {
+        id: params.id,
+        shopId: params.shopId,
+        isFeatured: false,
+      },
+      "1498d8c45b80c63ada20d2a07c07bde2364a3c69e1252ed3dfd6a095c2f2e4c8",
+    );
+
+    const item = data?.data?.itemDetail;
+
+    if (!item) {
+      throw new Error("No item details found");
+    }
+
+    const view = item.viewSection;
+
+    const tracking = view?.trackingProperties?.main_product_details ?? {};
+
+    const details = view?.productDetailSections ?? [];
+
+    const ingredients = details.find(
+      (d: any) => d.sectionTypeVariant === "ingredients",
+    );
+
+    const detailText = details.find(
+      (d: any) => d.sectionTypeVariant === "details",
+    );
+
+    return {
+      productId: tracking.product_id,
+
+      retailerLocationId: tracking.retailer_location_id,
+
+      storeName: tracking.retailer_name ?? null,
+
+      name: tracking.product_name,
+
+      imageUrls: view?.detailImages?.map((img: any) => img.url) ?? [],
+
+      imageUrl: view?.detailImages?.[0]?.url ?? null,
+
+      ingredients: ingredients?.bodyString ?? null,
+
+      details: detailText?.bodyString ?? null,
+
+      nutrition: view?.nutritionSection?.nutritionHeaderString ?? null,
+
+      availability: true,
+    };
   }
 }
