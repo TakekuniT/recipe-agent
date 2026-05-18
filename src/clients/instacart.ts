@@ -131,22 +131,33 @@ export class InstacartClient {
     );
 
     const collections = data?.data?.shopCollection?.shops ?? [];
-    //console.log("collections", collections);
 
     const shopIds = collections
       .map((s: any) => s?.id ?? s?.shopId)
       .filter(Boolean);
 
-    return {
-      shopIds: Array.from(new Set(shopIds)),
-    };
+    // return {
+    //   shopIds: Array.from(new Set(shopIds)),
+    // };
+    return collections.map((shop: any) => ({
+      shopId: shop.id,
+      retailerId: shop.retailerId,
+      retailerLocationId: shop.retailerLocationId,
+
+      storeName: shop.retailer?.name,
+      storeSlug: shop.retailer?.slug,
+
+      retailerType: shop.retailer?.retailerType,
+
+      serviceType: shop.serviceType,
+    }));
   }
 
-  async searchProducts(params: { query: string; first?: number }) {
+  async searchProductsTest(params: { query: string; first?: number }) {
     //const location = await this.resolveLocation(params.postalCode);
     const location2 = await this.resolveLocation2();
     const location = await this.resolveLocation(location2.postalCode);
-    const shopIds = await this.resolveShopIds({
+    const shopInfoIds = await this.resolveShopIds({
       postalCode: location.postalCode,
       zoneId: location.zoneId,
       addressId: location.addressId,
@@ -154,13 +165,15 @@ export class InstacartClient {
       longitude: location.coordinates.longitude,
     });
 
+    const shopIds = shopInfoIds.map((shopInfo: any) => shopInfo.shopId);
+
     const data = await this.graphql(
       "SearchCrossRetailerGroupResults",
       {
         searchSource: "cross_retailer_search",
         query: params.query,
         postalCode: location.postalCode,
-        shopIds: shopIds.shopIds,
+        shopIds: shopIds,
         zoneId: location.zoneId,
         shopId: "0",
         first: params.first ?? 10,
@@ -196,6 +209,154 @@ export class InstacartClient {
         available: item.availability?.available,
       })),
     );
+  }
+
+  async searchProducts(params: {
+    query: string;
+    zip_code?: string;
+    store?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const baseLocation = await this.resolveLocation2();
+
+    const location = await this.resolveLocation(
+      params.zip_code ?? baseLocation.postalCode,
+    );
+
+    const shops = await this.resolveShopIds({
+      postalCode: location.postalCode,
+      zoneId: location.zoneId,
+      addressId: location.addressId,
+      latitude: location.coordinates.latitude,
+      longitude: location.coordinates.longitude,
+    });
+
+    let filteredShops = shops;
+
+    if (params.store) {
+      const search = params.store.toLowerCase();
+
+      filteredShops = shops.filter((shop: any) => {
+        return (
+          shop.storeName?.toLowerCase().includes(search) ||
+          shop.storeSlug?.toLowerCase().includes(search)
+        );
+      });
+    }
+
+    const deliveryShops = filteredShops.filter(
+      (s: any) => s.serviceType === "delivery",
+    );
+
+    const finalShops = deliveryShops.length > 0 ? deliveryShops : filteredShops;
+
+    const shopIds = Array.from(new Set(finalShops.map((s: any) => s.shopId)));
+
+    if (shopIds.length === 0) {
+      return {
+        page: params.page ?? 1,
+        limit: params.limit ?? 10,
+        total: 0,
+        results: [],
+      };
+    }
+
+    const limit = params.limit ?? 10;
+    const page = params.page ?? 1;
+
+    const fetchCount = page * limit;
+
+    const data = await this.graphql(
+      "SearchCrossRetailerGroupResults",
+      {
+        searchSource: "cross_retailer_search",
+        query: params.query,
+
+        postalCode: location.postalCode,
+        zoneId: location.zoneId,
+
+        shopIds,
+        shopId: "0",
+
+        first: fetchCount,
+
+        disableAutocorrect: false,
+        includeDebugInfo: false,
+      },
+      "f08e542882bd166bf16c6dc40fa05109e8e3e0bcadc60235c9fb5cb547638327",
+    );
+
+    const groups = data?.data?.searchCrossRetailerGroupResults?.results ?? [];
+
+    const products = groups.flatMap((group: any) =>
+      (group.items ?? []).map((item: any, idx: number) => {
+        const matchingShop = finalShops.find(
+          (s: any) => s.shopId === group.shopId,
+        );
+
+        return {
+          productId: item.productId,
+
+          itemId: group.itemIds?.[idx] ?? null,
+
+          //shopId: group.shopId,
+
+          productName: item.name ?? null,
+
+          brand: item.brandName ?? null,
+
+          price:
+            item.price?.viewSection?.priceString ?? item.price?.price ?? null,
+
+          unitSize:
+            item.size ?? item.quantityAttributes?.unitAriaString ?? null,
+
+          availability: item.availability?.available ?? true,
+
+          storeName: matchingShop?.storeName ?? null,
+
+          //storeSlug: matchingShop?.storeSlug ?? null,
+
+          //retailerId: matchingShop?.retailerId ?? null,
+
+          //retailerLocationId: matchingShop?.retailerLocationId ?? null,
+
+          //serviceType: matchingShop?.serviceType ?? null,
+
+          imageUrl: item.viewSection?.itemImage?.url ?? null,
+
+          productUrl:
+            matchingShop?.storeSlug && item.productId
+              ? `https://www.instacart.com/store/${matchingShop.storeSlug}/products/${item.productId}`
+              : null,
+        };
+      }),
+    );
+
+    const deduped = Array.from(
+      new Map(
+        products.map((p: any) => [`${p.productId}-${p.shopId}`, p]),
+      ).values(),
+    );
+
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    const paginated = deduped.slice(start, end);
+
+    return {
+      page,
+      limit,
+      total: deduped.length,
+
+      appliedFilters: {
+        zip_code: location.postalCode,
+        store: params.store ?? null,
+      },
+
+      results: paginated,
+    };
   }
 
   async getProductDetails(params: { id: string; shopId: string }) {

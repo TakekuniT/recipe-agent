@@ -44,4 +44,12 @@ SearchProducts is working.
 https://www.instacart.com/graphql?operationName=ItemDetailData the response to this request has details of the product, but missing several fields. Contains availability, name, product image, nutrition, ingredients, and details. Missing store name, unit size/weight, price, category.
 Retrieve full product details by product ID or URL: price, unit size/weight, availability, category, product image URL, store name.
 
-Looked at the specs again, need to redo some parts of SearchProducts to fill in the missing fields.
+Looked at the specs again, need to redo some parts of SearchProducts to fill in the missing fields. Spent about 6 hours total today.
+
+## May 18
+
+https://www.instacart.com/graphql?operationName=Items endpoint has items details. Need to work on fixing the SearchProducts function to hardcode zip code, include store name, pagination, and limit. The latter 2 can be focused on later. The main problem is that https://www.instacart.com/graphql?operationName=SearchCrossRetailerGroupResults does not have store name as an input, so I need to find a different endpoint that can connect store name to shop ID which is in the output.
+
+Found this https://www.instacart.com/graphql?operationName=GetRetailerNameByID, but I need the reverse.
+
+Turns out what I did yesterday was meaningful. Shop resolve function includes retailer name in the collection variable, so we can use that to filter the store names. Product url can be constructed from the store slug and product id. Successfully finished up the SearchProducts function with proper specs.

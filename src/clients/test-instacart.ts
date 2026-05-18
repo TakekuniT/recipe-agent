@@ -43,7 +43,10 @@ async function main() {
   console.log("=== SEARCH PRODUCTS ===");
   const results = await client.searchProducts({
     query: "milk",
-    first: 10000000,
+    zip_code: "07030",
+    store: "Costco",
+    page: 1,
+    limit: 10,
   });
   console.dir(results, { depth: 5 });
 
@@ -56,15 +59,17 @@ async function main() {
   //       }),
   //     ),
   //   );
-  const products: any[] = [];
-  for (const result of results) {
-    const product = await client.getProductDetails({
-      id: result.itemId,
-      shopId: result.shopId,
-    });
-    products.push(product);
-  }
-  console.dir(products, { depth: 5 });
+
+  //   const products: any[] = [];
+  //   for (const result of results) {
+  //     const product = await client.getProductDetails({
+  //       id: result.itemId,
+  //       shopId: result.shopId,
+  //     });
+  //     products.push(product);
+  //   }
+
+  //console.dir(products, { depth: 5 });
 }
 
 main().catch(console.error);
