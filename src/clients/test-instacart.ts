@@ -23,6 +23,12 @@ async function main() {
 
   console.dir(location, { depth: 5 });
 
+  console.log("=== RESOLVE LOCATION 2 ===");
+
+  const location2 = await client.resolveLocation2();
+
+  console.dir(location2, { depth: 5 });
+
   console.log("=== RESOLVE SHOP IDS ===");
 
   const shopIds = await client.resolveShopIds({
@@ -38,7 +44,6 @@ async function main() {
   console.log("=== SEARCH PRODUCTS ===");
   const results = await client.searchProducts({
     query: "milk",
-    postalCode: "07090",
     pageViewId,
     first: 10000000,
   });

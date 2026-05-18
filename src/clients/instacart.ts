@@ -58,6 +58,36 @@ export class InstacartClient {
     return json;
   }
 
+  async resolveLocation2() {
+    const res = await this.graphql(
+      "UserAddresses",
+      {},
+      "22e6dfa5cb0c9e731bfb696f34f573c1c2e31b8191e96c2b14329c33400a0ddc",
+    );
+
+    const addresses = res?.data?.userAddresses;
+
+    if (!addresses || addresses.length === 0) {
+      throw new Error(
+        "No user addresses found. User is likely not authenticated.",
+      );
+    }
+
+    const primary = addresses.find((a: any) => a.isPrimary) ?? addresses[0];
+
+    return {
+      addressId: primary.id,
+      postalCode: primary.postalCode,
+      zoneId: primary.zoneId ?? null,
+      coordinates: primary.coordinates
+        ? {
+            latitude: primary.coordinates.latitude,
+            longitude: primary.coordinates.longitude,
+          }
+        : null,
+    };
+  }
+
   async resolveLocation(postalCode: string) {
     const data = await this.graphql(
       "UpdateUserLocation",
@@ -117,15 +147,17 @@ export class InstacartClient {
 
   async searchProducts(params: {
     query: string;
-    postalCode: string;
+    //postalCode: string;
     //shopIds: string[];
     pageViewId: string;
     //zoneId: string;
     first?: number;
   }) {
-    const location = await this.resolveLocation(params.postalCode);
+    //const location = await this.resolveLocation(params.postalCode);
+    const location2 = await this.resolveLocation2();
+    const location = await this.resolveLocation(location2.postalCode);
     const shopIds = await this.resolveShopIds({
-      postalCode: params.postalCode,
+      postalCode: location.postalCode,
       zoneId: location.zoneId,
       addressId: location.addressId,
       latitude: location.coordinates.latitude,
@@ -138,7 +170,7 @@ export class InstacartClient {
       {
         searchSource: "cross_retailer_search",
         query: params.query,
-        postalCode: params.postalCode,
+        postalCode: location.postalCode,
         shopIds: shopIds.shopIds,
         zoneId: location.zoneId,
         shopId: "0",

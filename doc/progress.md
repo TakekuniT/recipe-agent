@@ -36,3 +36,5 @@ Getting an authentication error trying to call UpdateUserLocation.
 Wrote a script to store cookie, manually need to copy cookie from chrome dev tools and run it once to save the cookie. Zone id is no longer hardcoded, uses UpdateUserLocation to retrieve zone id.
 
 https://www.instacart.com/graphql?operationName=ShopCollectionUnscoped seems to have the shop ids in the response. Successfully called this request to get shop ids, no longer need to hardcode shop ids.
+
+https://www.instacart.com/graphql?operationName=UserAddresses seems to have address information without any inputs. Made a new location resolve function that uses this request because it does not require any inputs. Missing zone id in input, so the two resolve functions are still both in use.
