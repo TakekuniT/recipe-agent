@@ -63,3 +63,5 @@ addToCart uses https://www.instacart.com/graphql?operationName=UpdateCartItemsMu
 Ran into an issue where active cart id was not found. Was not spamming it, but got a rate limit error: Error: GraphQL error 429: 429 - Too Many Requests.
 
 Need to have an active cart to work so far. There is a good chance getCart fails due to rate limiting because it makes a call for every item in the cart. getCart fails when there is no active cart. addToCart works without an active cart.
+
+Delete cart looks like it uses the same endpoint as adding to cart https://www.instacart.com/graphql?operationName=UpdateCartItemsMutation.

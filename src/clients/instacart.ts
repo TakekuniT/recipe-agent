@@ -688,4 +688,87 @@ export class InstacartClient {
       )}`,
     );
   }
+
+  async removeFromCart(params: {
+    product_id: string;
+    quantity?: number; // amount to remove
+    cart_id?: string;
+  }) {
+    const removeAmount = params.quantity ?? 1;
+
+    const cartId = params.cart_id ?? (await this.getCartId());
+
+    // get current cart
+    const cartData = await this.graphql(
+      "UserCart",
+      { id: cartId },
+      "32a2c15d1cbda8f819ec107bacd83bc45add7e783d29cd0595b02254650918c1",
+    );
+
+    const cart = cartData?.data?.userCart;
+
+    if (!cart) {
+      throw new Error("Cart not found");
+    }
+
+    const items = cart?.cartItemCollection?.cartItems ?? [];
+
+    // find matching cart item
+    const existingItem = items.find(
+      (item: any) => item?.basketProduct?.productId === params.product_id,
+    );
+
+    if (!existingItem) {
+      throw new Error(`Product ${params.product_id} not found in cart`);
+    }
+
+    const currentQuantity = existingItem.quantity ?? 1;
+
+    // reduce quantity
+    const newQuantity = Math.max(0, currentQuantity - removeAmount);
+
+    const itemId =
+      existingItem?.basketProduct?.id ?? existingItem?.basketProduct?.itemId;
+
+    if (!itemId) {
+      throw new Error("Missing basket product itemId");
+    }
+
+    const data = await this.graphql(
+      "UpdateCartItemsMutation",
+      {
+        cartType: "grocery",
+        requestTimestamp: Date.now(),
+
+        cartItemUpdates: [
+          {
+            itemId,
+            quantity: newQuantity,
+            quantityType: "each",
+          },
+        ],
+      },
+      "a33745461a4b19f7ae3d65e38d31f96412a352c64a4dbf4ea1c7302de1b85572",
+    );
+
+    const result = data?.data?.updateCartItems;
+
+    if (!result?.cart) {
+      throw new Error(`Failed to delete from cart: ${JSON.stringify(result)}`);
+    }
+
+    const updatedCart = result.cart;
+
+    return {
+      cart_id: updatedCart.id,
+      item_count: updatedCart.itemCount,
+
+      items:
+        updatedCart?.cartItemCollection?.cartItems?.map((item: any) => ({
+          product_id: item?.basketProduct?.productId,
+          name: item?.basketProduct?.name ?? null,
+          quantity: item?.quantity ?? 1,
+        })) ?? [],
+    };
+  }
 }

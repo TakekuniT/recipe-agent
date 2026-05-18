@@ -65,9 +65,16 @@ async function main() {
   console.log("=== ADD TO CART ===");
   const addToCart = await client.addToCart({
     product_id: "20654983",
-    quantity: 2,
+    quantity: 4,
   });
   console.dir(addToCart, { depth: 5 });
+
+  console.log("=== REMOVE FROM CART ===");
+  const removeFromCart = await client.removeFromCart({
+    product_id: "20654983",
+    quantity: 1,
+  });
+  console.dir(removeFromCart, { depth: 5 });
 }
 
 main().catch(console.error);
