@@ -37,14 +37,12 @@ async function main() {
     addressId: location.addressId,
     latitude: location.coordinates.latitude,
     longitude: location.coordinates.longitude,
-    pageViewId,
   });
   console.dir(shopIds, { depth: 5 });
 
   console.log("=== SEARCH PRODUCTS ===");
   const results = await client.searchProducts({
     query: "milk",
-    pageViewId,
     first: 10000000,
   });
   console.dir(results, { depth: 5 });

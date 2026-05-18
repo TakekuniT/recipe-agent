@@ -118,7 +118,6 @@ export class InstacartClient {
     addressId?: string;
     latitude: number;
     longitude: number;
-    pageViewId: string;
   }) {
     const data = await this.graphql(
       "ShopCollectionUnscoped",
@@ -149,7 +148,7 @@ export class InstacartClient {
     query: string;
     //postalCode: string;
     //shopIds: string[];
-    pageViewId: string;
+    // pageViewId: string;
     //zoneId: string;
     first?: number;
   }) {
@@ -162,7 +161,6 @@ export class InstacartClient {
       addressId: location.addressId,
       latitude: location.coordinates.latitude,
       longitude: location.coordinates.longitude,
-      pageViewId: params.pageViewId,
     });
 
     const data = await this.graphql(
@@ -174,7 +172,7 @@ export class InstacartClient {
         shopIds: shopIds.shopIds,
         zoneId: location.zoneId,
         shopId: "0",
-        first: params.first ?? 10,
+        first: params.first,
         disableAutocorrect: false,
         includeDebugInfo: false,
       },
