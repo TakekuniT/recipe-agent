@@ -53,3 +53,5 @@ https://www.instacart.com/graphql?operationName=Items endpoint has items details
 Found this https://www.instacart.com/graphql?operationName=GetRetailerNameByID, but I need the reverse.
 
 Turns out what I did yesterday was meaningful. Shop resolve function includes retailer name in the collection variable, so we can use that to filter the store names. Product url can be constructed from the store slug and product id. Successfully finished up the SearchProducts function with proper specs.
+
+Successfully finished getSearchProducts function. Generates shop ids based on location, uses retail location id and product id to construct item id to query item details. Returns an array of products from different stores in the area.

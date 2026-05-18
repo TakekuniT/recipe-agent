@@ -1,4 +1,5 @@
 // searchProducts, getProductDetails, listDepartments, addToCart, getCart, removeFromCart
+import crypto from "crypto";
 
 export class InstacartClient {
   constructor(private cookieHeader: string) {}
@@ -16,7 +17,7 @@ export class InstacartClient {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
 
         "x-client-identifier": "web",
-        "x-page-view-id": variables.pageViewId,
+        "x-page-view-id": crypto.randomUUID(), //variables.pageViewId,
 
         "x-ic-qp": "a7145ba7-0509-504a-98e9-366e6f244b11",
         "x-ic-view-layer": "true",
@@ -359,7 +360,7 @@ export class InstacartClient {
     };
   }
 
-  async getProductDetails(params: { id: string; shopId: string }) {
+  async getProductDetailsTest(params: { id: string; shopId: string }) {
     const data = await this.graphql(
       "ItemDetailData",
       {
@@ -411,5 +412,113 @@ export class InstacartClient {
 
       availability: true,
     };
+  }
+
+  async getProductDetails(params: { product_id?: string; url?: string }) {
+    if (!params.product_id && !params.url) {
+      throw new Error("At least one of product_id or url must be provided");
+    }
+
+    let productId = params.product_id;
+
+    if (!productId && params.url) {
+      const match = params.url.match(/products\/(\d+)/);
+
+      if (!match) {
+        throw new Error("Could not extract product ID from URL");
+      }
+
+      productId = match[1];
+    }
+
+    const location2 = await this.resolveLocation2();
+
+    const location = await this.resolveLocation(location2.postalCode);
+
+    const shops = await this.resolveShopIds({
+      postalCode: location.postalCode,
+      zoneId: location.zoneId,
+      addressId: location.addressId,
+      latitude: location.coordinates.latitude,
+      longitude: location.coordinates.longitude,
+    });
+
+    if (!shops.length) {
+      throw new Error("No shops found");
+    }
+
+    let results: any[] = [];
+    for (const shop of shops) {
+      try {
+        const itemId = `items_${shop.retailerLocationId}-${productId}`;
+
+        const data = await this.graphql(
+          "Items",
+          {
+            ids: [itemId],
+            shopId: shop.shopId,
+            zoneId: location.zoneId,
+            postalCode: location.postalCode,
+          },
+          "b2411f6acba21b2a6a277ca5616fdc5d1265ba647808895c05fe7ce1fd2fdcec",
+        );
+
+        const item = data?.data?.items?.[0];
+
+        if (!item) {
+          continue;
+        }
+
+        const priceView = item.price?.viewSection;
+
+        const result = {
+          productId: item.productId,
+
+          name: item.name ?? null,
+
+          brand: item.brandName ?? null,
+
+          price:
+            priceView?.itemDetails?.priceString ??
+            priceView?.priceString ??
+            null,
+
+          pricePerUnit: priceView?.itemDetails?.pricePerUnitString ?? null,
+
+          size: item.size ?? null,
+
+          availability: item.availability?.available ?? false,
+
+          category:
+            item.viewSection?.trackingProperties?.product_category_name ?? null,
+
+          nutrition:
+            item.nutritionalAttributes ??
+            item.dietary?.viewSection?.attributeSections?.map(
+              (a: any) => a.attributeString,
+            ) ??
+            null,
+
+          storeName: shop.storeName ?? null,
+
+          productUrl:
+            params.url ??
+            `https://www.instacart.com/products/${item.productId}`,
+
+          imageUrl:
+            item.viewSection?.itemImage?.url ??
+            item.viewSection?.itemTransparentImage?.url ??
+            null,
+        };
+        results.push(result);
+      } catch (err) {
+        console.log("shop failed", shop.storeName, err);
+
+        continue;
+      }
+      return results;
+    }
+
+    throw new Error(`Product ${productId} not found in any shop`);
   }
 }

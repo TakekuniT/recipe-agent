@@ -51,25 +51,8 @@ async function main() {
   console.dir(results, { depth: 5 });
 
   console.log("=== GET PRODUCTS ===");
-  //   const products = await Promise.all(
-  //     results.map((p: any) =>
-  //       client.getProductDetails({
-  //         id: p.itemId,
-  //         shopId: p.shopId,
-  //       }),
-  //     ),
-  //   );
-
-  //   const products: any[] = [];
-  //   for (const result of results) {
-  //     const product = await client.getProductDetails({
-  //       id: result.itemId,
-  //       shopId: result.shopId,
-  //     });
-  //     products.push(product);
-  //   }
-
-  //console.dir(products, { depth: 5 });
+  const product = await client.getProductDetails({ product_id: "18316911" });
+  console.dir(product, { depth: 5 });
 }
 
 main().catch(console.error);
