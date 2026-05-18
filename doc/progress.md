@@ -65,3 +65,5 @@ Ran into an issue where active cart id was not found. Was not spamming it, but g
 Need to have an active cart to work so far. There is a good chance getCart fails due to rate limiting because it makes a call for every item in the cart. getCart fails when there is no active cart. addToCart works without an active cart.
 
 Delete cart looks like it uses the same endpoint as adding to cart https://www.instacart.com/graphql?operationName=UpdateCartItemsMutation.
+
+Going back to allrecipe.com, found this url https://feeds-api.dotdashmeredith.com/v1/rss/google/afd5e9ea-c220-419e-9135-d8457772e240 in the document response. Allrecipes is using a backend service called feeds-api.dotdashmeredith.com.

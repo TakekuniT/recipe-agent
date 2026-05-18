@@ -633,7 +633,23 @@ export class InstacartClient {
 
     let lastError: any = null;
 
-    for (const shop of shops) {
+    let filteredShops = shops;
+
+    if (params.store) {
+      const search = params.store.toLowerCase();
+
+      filteredShops = shops.filter(
+        (shop: any) =>
+          shop.storeName?.toLowerCase().includes(search) ||
+          shop.storeSlug?.toLowerCase().includes(search),
+      );
+    }
+
+    if (!filteredShops.length) {
+      throw new Error(`No shops found matching store "${params.store}"`);
+    }
+
+    for (const shop of filteredShops) {
       const itemId = `items_${shop.retailerLocationId}-${params.product_id}`;
 
       try {

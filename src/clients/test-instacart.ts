@@ -65,6 +65,7 @@ async function main() {
   console.log("=== ADD TO CART ===");
   const addToCart = await client.addToCart({
     product_id: "20654983",
+    store: "extra supermarket",
     quantity: 4,
   });
   console.dir(addToCart, { depth: 5 });
