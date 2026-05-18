@@ -54,13 +54,20 @@ async function main() {
   const product = await client.getProductDetails({ product_id: "18316911" });
   console.dir(product, { depth: 5 });
 
-  console.log("=== GET CART ID ===");
-  const cartId = await client.getCartId();
-  console.log(cartId);
+  //   console.log("=== GET CART ID ===");
+  //   const cartId = await client.getCartId();
+  //   console.log(cartId);
 
-  console.log("=== GET CART ===");
-  const cart = await client.getCart({});
-  console.dir(cart, { depth: 5 });
+  //   console.log("=== GET CART ===");
+  //   const cart = await client.getCart({});
+  //   console.dir(cart, { depth: 5 });
+
+  console.log("=== ADD TO CART ===");
+  const addToCart = await client.addToCart({
+    product_id: "20654983",
+    quantity: 2,
+  });
+  console.dir(addToCart, { depth: 5 });
 }
 
 main().catch(console.error);

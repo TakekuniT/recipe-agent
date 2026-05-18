@@ -57,3 +57,9 @@ Turns out what I did yesterday was meaningful. Shop resolve function includes re
 Successfully finished getSearchProducts function. Generates shop ids based on location, uses retail location id and product id to construct item id to query item details. Returns an array of products from different stores in the area.
 
 https://www.instacart.com/graphql?operationName=UserCart response has cart items. https://www.instacart.com/graphql?operationName=CartData also seems to have cart data, but less human readable, so probably will use the former. Both requires cart id as an input, must find a way to get cart id. https://www.instacart.com/graphql?operationName=CurrentUserFields has user id, which might be useful later. https://www.instacart.com/graphql?operationName=PersonalActiveCarts has no parameters and returns cart id. Encountered an issue where 'https://www.instacart.com/graphql?operationName=UserCart does not have unit price or line total. Retrieves product details in the same request using getProductDetails, this works but is not performant.
+
+addToCart uses https://www.instacart.com/graphql?operationName=UpdateCartItemsMutation, which was pretty easy to find. One limitation is I will be using the first available shop in the area that has the product. When I added the item to cart, it worked but I learned that there can be multiple carts. One cart per store essentially. This puts another limitation on getCartId and getCart. Might need to redo getCartId logic to return the active cart id of the store instead of the first active cart id.
+
+Ran into an issue where active cart id was not found. Was not spamming it, but got a rate limit error: Error: GraphQL error 429: 429 - Too Many Requests.
+
+Need to have an active cart to work so far. There is a good chance getCart fails due to rate limiting because it makes a call for every item in the cart. getCart fails when there is no active cart. addToCart works without an active cart.

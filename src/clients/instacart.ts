@@ -544,6 +544,7 @@ export class InstacartClient {
     }
 
     return activeCart.id;
+    //return carts.map((cart: any) => cart.id);
   }
 
   async getCart(params: { zip_code?: string; store?: string } = {}) {
@@ -569,9 +570,18 @@ export class InstacartClient {
         const products = await this.getProductDetails({
           product_id: productId,
         });
+        // this is an issue because it just takes the first store product
+        //const productDetails = products[0];
 
-        const productDetails = products[0];
-        const unitPrice = Number(productDetails?.price?.replace("$", ""));
+        const productDetails =
+          products.find(
+            (p: any) =>
+              p.storeName?.toLowerCase() === params.store?.toLowerCase(),
+          ) ?? products[0];
+        //const unitPrice = Number(productDetails?.price?.replace("$", ""));
+        const unitPrice = parseFloat(
+          productDetails?.price?.replace(/[^0-9.]/g, ""),
+        );
 
         const lineTotal = unitPrice * quantity;
         subtotal += lineTotal;
@@ -591,5 +601,91 @@ export class InstacartClient {
       item_count: normalizedItems.length,
       subtotal: subtotal,
     };
+  }
+
+  async addToCart(params: {
+    product_id: string;
+    quantity?: number;
+    zip_code?: string;
+    store?: string;
+  }) {
+    const quantity = params.quantity ?? 1;
+
+    //const cartId = await this.getCartId();
+
+    const baseLocation = await this.resolveLocation2();
+
+    const location = await this.resolveLocation(
+      params.zip_code ?? baseLocation.postalCode,
+    );
+
+    const shops = await this.resolveShopIds({
+      postalCode: location.postalCode,
+      zoneId: location.zoneId,
+      addressId: location.addressId,
+      latitude: location.coordinates.latitude,
+      longitude: location.coordinates.longitude,
+    });
+
+    if (!shops.length) {
+      throw new Error("No shops available for addToCart");
+    }
+
+    let lastError: any = null;
+
+    for (const shop of shops) {
+      const itemId = `items_${shop.retailerLocationId}-${params.product_id}`;
+
+      try {
+        const data = await this.graphql(
+          "UpdateCartItemsMutation",
+          {
+            //cartId,
+            cartType: "grocery",
+            requestTimestamp: Date.now(),
+            cartItemUpdates: [
+              {
+                itemId,
+                quantity,
+                quantityType: "each",
+              },
+            ],
+          },
+          "a33745461a4b19f7ae3d65e38d31f96412a352c64a4dbf4ea1c7302de1b85572",
+        );
+
+        const result = data?.data?.updateCartItems;
+
+        if (result?.cart) {
+          const cart = result.cart;
+
+          const items = cart?.cartItemCollection?.cartItems ?? [];
+
+          return {
+            cart_id: cart.id,
+            item_count: cart.itemCount,
+            items: items.map((item: any) => ({
+              product_id: item?.basketProduct?.productId,
+              name: item?.basketProduct?.name ?? null,
+              quantity: item?.quantity ?? 1,
+            })),
+          };
+        }
+
+        if (result?.errorType) {
+          lastError = result;
+          continue;
+        }
+      } catch (err) {
+        lastError = err;
+        continue;
+      }
+    }
+
+    throw new Error(
+      `Failed to add item to cart in all shops. Last error: ${JSON.stringify(
+        lastError,
+      )}`,
+    );
   }
 }
