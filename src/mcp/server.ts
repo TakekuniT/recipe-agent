@@ -1,7 +1,7 @@
 import express from "express";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import type { Transport } from "@modelcontextprotocol/sdk/server/transport.js";
+//import type { Transport } from "@modelcontextprotocol/sdk/server/transport.js";
 
 import { searchRecipesTool } from "./tools/searchRecipes.js";
 import { getRecipeTool } from "./tools/getRecipe.js";
@@ -15,7 +15,7 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
-const tools = [getRecipeTool];
+const tools = [getRecipeTool, searchRecipesTool];
 
 // for (const tool of tools) {
 //   server.tool(tool.name, tool.description, tool.schema.shape, tool.handler);
@@ -28,7 +28,7 @@ const transport = new StreamableHTTPServerTransport();
 
 transport.onclose = () => {};
 
-await server.connect(transport as Transport);
+await server.connect(transport as any);
 app.post("/mcp", async (req, res) => {
   try {
     await transport.handleRequest(req, res, req.body);
