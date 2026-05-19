@@ -6,6 +6,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { searchRecipesTool } from "./tools/searchRecipes.js";
 import { getRecipeTool } from "./tools/getRecipe.js";
 import { searchProductsTool } from "./tools/searchProducts.js";
+import { getProductDetailsTool } from "./tools/getProductDetails.js";
 
 const app = express();
 app.use(express.json());
@@ -15,7 +16,12 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
-const tools = [getRecipeTool, searchRecipesTool, searchProductsTool];
+const tools = [
+  getRecipeTool,
+  searchRecipesTool,
+  searchProductsTool,
+  getProductDetailsTool,
+];
 
 // for (const tool of tools) {
 //   server.tool(tool.name, tool.description, tool.schema.shape, tool.handler);
