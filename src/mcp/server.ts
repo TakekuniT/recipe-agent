@@ -15,7 +15,7 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
-const tools = [getRecipeTool, searchRecipesTool];
+const tools = [getRecipeTool, searchRecipesTool, searchProductsTool];
 
 // for (const tool of tools) {
 //   server.tool(tool.name, tool.description, tool.schema.shape, tool.handler);
