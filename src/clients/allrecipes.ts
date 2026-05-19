@@ -112,71 +112,84 @@ export class AllRecipesClient {
   async searchRecipes(
     options: SearchRecipesOptions,
   ): Promise<RecipeSearchResult[]> {
-    const {
-      query,
-      cuisine,
-      dietary,
-      maxCookTimeMinutes,
-      page = 1,
-      limit = 10,
-    } = options;
+    const { query, cuisine, dietary, maxCookTimeMinutes, limit = 10 } = options;
 
-    const params = new URLSearchParams({
-      q: query,
-    });
-
-    if (page > 1) {
-      params.set("page", String(page));
-    }
-
-    const url = `${BASE_URL}/search?${params.toString()}`;
-
-    const browser = await chromium.launch({
-      headless: true,
-    });
-
+    const browser = await chromium.launch({ headless: true });
     const browserPage = await browser.newPage({
       userAgent:
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
     });
 
-    await browserPage.goto(url, {
-      waitUntil: "domcontentloaded",
-    });
+    const RESULTS_PER_PAGE = 24;
 
-    await browserPage.waitForTimeout(3000);
+    let offset = 0;
+    let allResults: RecipeSearchResult[] = [];
 
-    const html = await browserPage.content();
+    while (allResults.length < limit) {
+      const url = `${BASE_URL}/search?q=${encodeURIComponent(
+        query,
+      )}&offset=${offset}`;
+
+      await browserPage.goto(url, { waitUntil: "domcontentloaded" });
+      await browserPage.waitForTimeout(2500);
+
+      const pageResults: any[] = await browserPage.$$eval(
+        'a[href*="/recipe/"]',
+        (cards) => {
+          return cards
+            .map((card) => {
+              const url = card.getAttribute("href");
+              if (!url) return null;
+
+              const idMatch = url.match(/recipe\/(\d+)/);
+              if (!idMatch) return null;
+
+              const title =
+                card.querySelector(".card__title-text")?.textContent?.trim() ||
+                "Unknown Recipe";
+
+              const image =
+                card.querySelector("img")?.getAttribute("data-src") ||
+                card.querySelector("img")?.getAttribute("src") ||
+                null;
+
+              const ratingText =
+                card
+                  .querySelector(".mm-recipes-card-meta__rating-count-number")
+                  ?.textContent?.trim() || null;
+
+              const reviewCount = ratingText
+                ? Number(ratingText.replace(/[^\d]/g, ""))
+                : null;
+
+              return {
+                id: idMatch[1],
+                title,
+                description: null,
+                cookTimeMinutes: null,
+                rating: null,
+                reviewCount,
+                imageUrl: image,
+                sourceUrl: url,
+              };
+            })
+            .filter(Boolean);
+        },
+      );
+
+      if (!pageResults.length) break;
+
+      allResults.push(...pageResults);
+
+      offset += RESULTS_PER_PAGE;
+    }
 
     await browser.close();
 
-    const recipeMatches = [
-      ...html.matchAll(
-        /<a[^>]+href="(https:\/\/www\.allrecipes\.com\/recipe\/(\d+)\/[^"]+)"[\s\S]*?<img[\s\S]*?(?:data-src|src)="([^"]+)"[\s\S]*?alt="([^"]*)"/g,
-      ),
-    ];
-
-    const results: RecipeSearchResult[] = [];
-
-    for (const match of recipeMatches) {
-      const sourceUrl = match[1];
-      const id = match[2];
-      const imageUrl = match[3];
-      const title = cleanText(match[4]) || "Unknown Recipe";
-
-      results.push({
-        id: id || "",
-        title,
-        description: null,
-        cookTimeMinutes: null,
-        rating: null,
-        reviewCount: null,
-        imageUrl: imageUrl || null,
-        sourceUrl: sourceUrl || "",
-      });
-    }
-
-    const deduped = Array.from(new Map(results.map((r) => [r.id, r])).values());
+    // dedupe across pages
+    const deduped = Array.from(
+      new Map(allResults.map((r) => [r.sourceUrl, r])).values(),
+    );
 
     let filtered = deduped;
 
