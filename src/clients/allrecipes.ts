@@ -1,6 +1,7 @@
 // searchRecipes, getRecipe, browseCategories
 
 import { chromium } from "playwright";
+import { parseIngredient } from "../parser/ingredientParser.js";
 
 export interface SearchRecipesOptions {
   query: string;
@@ -245,101 +246,166 @@ export class AllRecipesClient {
 
     const recipeUrl = url || `${BASE_URL}/recipe/${recipeId}/`;
 
-    const browser = await chromium.launch({
-      headless: true,
-    });
-
-    const browserPage = await browser.newPage({
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({
       userAgent:
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
     });
 
-    await browserPage.goto(recipeUrl, {
-      waitUntil: "domcontentloaded",
-    });
+    try {
+      await page.goto(recipeUrl, { waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(2500);
 
-    await browserPage.waitForTimeout(3000);
+      const html = await page.content();
 
-    const html = await browserPage.content();
+      // =========================
+      // 1. JSON-LD (MOST IMPORTANT FIX)
+      // =========================
+      const jsonLd = await page.evaluate(() => {
+        const scripts = Array.from(
+          document.querySelectorAll('script[type="application/ld+json"]'),
+        );
 
-    await browser.close();
+        const parsed: any[] = [];
 
-    const jsonLdBlocks = extractJsonLd(html);
+        for (const s of scripts) {
+          try {
+            const json = JSON.parse(s.textContent || "");
+            if (Array.isArray(json)) parsed.push(...json);
+            else parsed.push(json);
+          } catch {}
+        }
 
-    const recipeJson = jsonLdBlocks.find((item) => {
-      if (item["@type"] === "Recipe") return true;
+        return parsed;
+      });
 
-      if (Array.isArray(item["@graph"])) {
-        return item["@graph"].some((g: any) => g["@type"] === "Recipe");
-      }
+      const recipeSchema =
+        jsonLd.find((x) => x?.["@type"]?.includes("Recipe")) || {};
 
-      return false;
-    });
+      // =========================
+      // 2. BASIC FIELDS (DOM fallback)
+      // =========================
+      const title =
+        html
+          .match(/<h1[^>]*>(.*?)<\/h1>/)?.[1]
+          ?.replace(/\s+/g, " ")
+          .trim() ||
+        recipeSchema.name ||
+        "Unknown Recipe";
 
-    let recipeData: any = recipeJson;
+      const description =
+        recipeSchema.description ||
+        html
+          .match(/article-subheading[^>]*>(.*?)<\/p>/)?.[1]
+          ?.replace(/<[^>]+>/g, "")
+          .replace(/\s+/g, " ")
+          .trim() ||
+        null;
 
-    if (recipeJson?.["@graph"]) {
-      recipeData = recipeJson["@graph"].find(
-        (g: any) => g["@type"] === "Recipe",
-      );
-    }
+      // =========================
+      // 3. INGREDIENTS
+      // =========================
+      const ingredients = [
+        ...html.matchAll(
+          /mm-recipes-structured-ingredients__list-item[^>]*>([\s\S]*?)<\/li>/g,
+        ),
+      ]
+        .map((m) => ({
+          raw: m[1]!
+            .replace(/<[^>]+>/g, "")
+            .replace(/\s+/g, " ")
+            .trim(),
+        }))
+        .filter((x) => x.raw);
+      const parsedIngredients = ingredients.map((i) => parseIngredient(i.raw));
 
-    if (!recipeData) {
-      console.warn("JSON-LD missing, falling back to DOM parsing");
+      // =========================
+      // 4. INSTRUCTIONS
+      // =========================
+      const instructions = [
+        ...html.matchAll(
+          /mm-recipes-steps__content[^>]*>[\s\S]*?<ol[^>]*>([\s\S]*?)<\/ol>/g,
+        ),
+      ].flatMap((m) => {
+        const ol = m[1] || "";
+
+        const steps = [...ol.matchAll(/<li[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/g)];
+
+        return steps.map((s, i) => ({
+          step: i + 1,
+          text: s[1]!
+            .replace(/<[^>]+>/g, "")
+            .replace(/\s+/g, " ")
+            .trim(),
+        }));
+      });
+
+      // =========================
+      // 5. META (DOM fallback)
+      // =========================
+      const getMeta = (label: string) => {
+        const items = Array.from(
+          html.matchAll(
+            /mm-recipes-details__item[\s\S]*?mm-recipes-details__label[^>]*>(.*?)<\/div>[\s\S]*?mm-recipes-details__value[^>]*>(.*?)<\/div>/g,
+          ),
+        );
+
+        for (const m of items) {
+          const key = m[1]?.toLowerCase() || "";
+          const value = m[2]?.replace(/<[^>]+>/g, "").trim();
+
+          if (key.includes(label.toLowerCase())) return value;
+        }
+
+        return null;
+      };
+
+      // =========================
+      // 6. IMAGE
+      // =========================
+      const image =
+        recipeSchema.image?.url ||
+        html.match(/<img[^>]+src="([^"]+)"/)?.[1] ||
+        html.match(/<img[^>]+data-src="([^"]+)"/)?.[1] ||
+        null;
+
+      // =========================
+      // 7. FINAL RETURN
+      // =========================
+      await browser.close();
 
       return {
         id: recipeId || "",
-        title: "Unknown (fallback needed)",
-        description: null,
-        ingredients: [],
-        instructions: [],
-        prepTimeMinutes: null,
-        cookTimeMinutes: null,
-        totalTimeMinutes: null,
-        servings: null,
-        nutrition: null,
-        rating: null,
-        reviewCount: null,
-        imageUrl: null,
+        title,
+        description,
+        ingredients: parsedIngredients,
+        instructions,
+
+        // FIXED THESE:
+        prepTimeMinutes: parseMinutes(recipeSchema?.prepTime),
+        cookTimeMinutes: parseMinutes(recipeSchema?.cookTime),
+        totalTimeMinutes: parseMinutes(recipeSchema?.totalTime),
+
+        servings: recipeSchema?.recipeYield || getMeta("Servings"),
+
+        // BONUS (NOW WORKS):
+        nutrition: recipeSchema?.nutrition || null,
+
+        rating: recipeSchema?.aggregateRating?.ratingValue
+          ? Number(recipeSchema.aggregateRating.ratingValue)
+          : null,
+
+        reviewCount: recipeSchema?.aggregateRating?.ratingCount
+          ? Number(recipeSchema.aggregateRating.ratingCount)
+          : null,
+
+        imageUrl: image,
         sourceUrl: recipeUrl,
       };
+    } catch (err) {
+      await browser.close();
+      throw err;
     }
-
-    const ingredients: RecipeIngredient[] = (
-      recipeData.recipeIngredient || []
-    ).map((ingredient: string) => ({
-      raw: ingredient,
-    }));
-
-    const instructions: RecipeInstruction[] = (
-      recipeData.recipeInstructions || []
-    ).map((instruction: any, index: number) => ({
-      step: index + 1,
-      text:
-        typeof instruction === "string" ? instruction : instruction.text || "",
-    }));
-
-    return {
-      id:
-        recipeData.mainEntityOfPage?.match?.(/recipe\/(\d+)/)?.[1] ||
-        recipeId ||
-        "",
-      title: recipeData.name,
-      description: cleanText(recipeData.description),
-      ingredients,
-      instructions,
-      prepTimeMinutes: parseMinutes(recipeData.prepTime),
-      cookTimeMinutes: parseMinutes(recipeData.cookTime),
-      totalTimeMinutes: parseMinutes(recipeData.totalTime),
-      servings: recipeData.recipeYield?.toString?.() || null,
-      nutrition: recipeData.nutrition || null,
-      rating: Number(recipeData.aggregateRating?.ratingValue) || null,
-      reviewCount: Number(recipeData.aggregateRating?.reviewCount) || null,
-      imageUrl: Array.isArray(recipeData.image)
-        ? recipeData.image[0]
-        : recipeData.image || null,
-      sourceUrl: recipeUrl,
-    };
   }
 
   async browseCategories(): Promise<RecipeCategory[]> {

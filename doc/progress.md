@@ -67,3 +67,5 @@ Need to have an active cart to work so far. There is a good chance getCart fails
 Delete cart looks like it uses the same endpoint as adding to cart https://www.instacart.com/graphql?operationName=UpdateCartItemsMutation.
 
 Going back to allrecipe.com, found this url https://feeds-api.dotdashmeredith.com/v1/rss/google/afd5e9ea-c220-419e-9135-d8457772e240 in the document response. Allrecipes is using a backend service called feeds-api.dotdashmeredith.com. Getting a problem with the webscraper because it only webscrapes the first page of results. Fixed this issue by loading more pages in a while loop. Might have to treat html as an API response.
+
+Working on getRecipe function was relatively easy pretty similar to the searchRecipes function in terms of scraping from the html.

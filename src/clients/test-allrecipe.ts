@@ -20,7 +20,7 @@ async function main() {
   console.log("\n=== GET RECIPE ===");
 
   const recipe = await allRecipesClient.getRecipe({
-    recipeId: firstRecipe!.id,
+    url: "https://www.allrecipes.com/recipe/68129/dads-pad-thai/",
   });
 
   console.log(JSON.stringify(recipe, null, 2));
