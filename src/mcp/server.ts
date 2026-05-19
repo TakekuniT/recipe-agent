@@ -15,19 +15,19 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
-const tools = [searchRecipesTool, getRecipeTool, searchProductsTool];
+const tools = [getRecipeTool];
 
+// for (const tool of tools) {
+//   server.tool(tool.name, tool.description, tool.schema.shape, tool.handler);
+// }
 for (const tool of tools) {
-  // if (!tool?.name || !tool?.description || !tool?.schema || !tool?.handler) {
-  //   throw new Error(
-  //     `MCP tool definition is incomplete: ${tool?.name ?? "unknown"}`,
-  //   );
-  // }
-  // server.tool(tool.name, tool.description, tool.schema.shape, tool.handler);
+  server.registerTool(tool.name, tool.schema, tool.handler);
 }
 
 const transport = new StreamableHTTPServerTransport();
-transport.onclose = transport.onclose ?? (() => {});
+
+transport.onclose = () => {};
+
 await server.connect(transport as Transport);
 app.post("/mcp", async (req, res) => {
   try {
