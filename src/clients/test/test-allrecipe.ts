@@ -1,4 +1,4 @@
-import { allRecipesClient } from "./allrecipes.js";
+import { allRecipesClient } from "../allrecipes.js";
 
 async function main() {
   console.log("=== SEARCH RECIPES ===");

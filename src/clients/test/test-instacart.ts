@@ -1,9 +1,9 @@
-import { InstacartClient } from "./instacart.js";
+import { InstacartClient } from "../instacart.js";
 import crypto from "crypto";
 import {
   requireInstacartCookie,
   saveInstacartCookie,
-} from "../../scripts/login_instacart.js";
+} from "../../../scripts/login_instacart.js";
 
 async function main() {
   // Cookie run once, then comment it out
