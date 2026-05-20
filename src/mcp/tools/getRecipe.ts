@@ -7,8 +7,8 @@ export const getRecipeTool = {
   description: "Retrieve a full recipe by recipe ID or URL from Allrecipes.",
 
   schema: z.object({
-    recipe_id: z.string().optional(),
-    url: z.string().url().optional(),
+    recipe_id: z.string().nullable(),
+    url: z.string().url().nullable(),
   }),
 
   handler: async (extra: any) => {

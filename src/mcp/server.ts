@@ -7,6 +7,7 @@ import { searchRecipesTool } from "./tools/searchRecipes.js";
 import { getRecipeTool } from "./tools/getRecipe.js";
 import { searchProductsTool } from "./tools/searchProducts.js";
 import { getProductDetailsTool } from "./tools/getProductDetails.js";
+import { estimateRecipeCostTool } from "./tools/estimateRecipeCost.js";
 
 const app = express();
 app.use(express.json());
@@ -21,13 +22,19 @@ const tools = [
   searchRecipesTool,
   searchProductsTool,
   getProductDetailsTool,
+  estimateRecipeCostTool,
 ];
 
 // for (const tool of tools) {
 //   server.tool(tool.name, tool.description, tool.schema.shape, tool.handler);
 // }
+console.log("RAW SCHEMA:", getRecipeTool.schema.shape);
 for (const tool of tools) {
-  server.registerTool(tool.name, tool.schema, tool.handler);
+  console.log(tool.name);
+  console.log("SCHEMA:", tool.schema);
+}
+for (const tool of tools) {
+  server.registerTool(tool.name, tool.schema.toJSONSchema(), tool.handler);
 }
 
 const transport = new StreamableHTTPServerTransport();
@@ -42,6 +49,15 @@ app.post("/mcp", async (req, res) => {
     console.error("MCP error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+app.get("/debug/tools", (req, res) => {
+  res.json({
+    tools: tools.map((t) => ({
+      name: t.name,
+      hasSchema: !!t.schema,
+    })),
+  });
 });
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
