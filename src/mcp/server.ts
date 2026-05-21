@@ -34,7 +34,11 @@ for (const tool of tools) {
   console.log("SCHEMA:", tool.schema);
 }
 for (const tool of tools) {
-  server.registerTool(tool.name, tool.schema.toJSONSchema(), tool.handler);
+  server.registerTool(
+    tool.name,
+    tool.schema.toJSONSchema(),
+    tool.handler as any,
+  );
 }
 
 const transport = new StreamableHTTPServerTransport();

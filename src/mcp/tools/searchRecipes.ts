@@ -20,47 +20,39 @@ export const searchRecipesTool = {
     limit: z.number().int().optional().default(10),
   }),
 
-  handler: async (extra: any) => {
-    const args = extra.arguments as {
-      query: string;
-      cuisine?: string;
-      dietary?: string;
-      max_cook_time_minutes?: number;
-      page?: number;
-      limit?: number;
-    };
+  handler: async ({ arguments: args }: any) => {
+    try {
+      console.log("TOOLS INPUT", args);
 
-    if (!args.query) {
-      throw new Error("query is required");
+      if (!args?.query) {
+        throw new Error("query is required");
+      }
+
+      const searchArgs: any = {
+        query: args.query,
+        page: args.page ?? 1,
+        limit: args.limit ?? 10,
+      };
+
+      if (args.cuisine !== undefined) searchArgs.cuisine = args.cuisine;
+      if (args.dietary !== undefined) searchArgs.dietary = args.dietary;
+      if (args.max_cook_time_minutes !== undefined) {
+        searchArgs.maxCookTimeMinutes = args.max_cook_time_minutes;
+      }
+
+      const results = await allRecipesClient.searchRecipes(searchArgs);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
+      };
+    } catch (err) {
+      console.error("TOOLS ERROR", err);
+      throw err;
     }
-
-    const searchArgs: any = {
-      query: args.query,
-      page: args.page ?? 1,
-      limit: args.limit ?? 10,
-    };
-
-    if (args.cuisine !== undefined) {
-      searchArgs.cuisine = args.cuisine;
-    }
-
-    if (args.dietary !== undefined) {
-      searchArgs.dietary = args.dietary;
-    }
-
-    if (args.max_cook_time_minutes !== undefined) {
-      searchArgs.maxCookTimeMinutes = args.max_cook_time_minutes;
-    }
-
-    const results = await allRecipesClient.searchRecipes(searchArgs);
-
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: JSON.stringify(results, null, 2),
-        },
-      ],
-    };
   },
 };

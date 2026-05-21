@@ -143,4 +143,10 @@ Tools are registered, but the agent is unable to call them for some reason. Tool
 
 ## May 20
 
-Fixed up some stuff by adding tools as an extra parameter, got a 406 error when trying to call tools. Added proper headers and got error 500.
+Fixed up some stuff by adding tools as an extra parameter, got a 406 error when trying to call tools. Added proper headers and got error 500. Getting inconsistent errors, sometimes the query parameter is missing, other times error 500 is being returned.
+
+```
+{"id":"gen-1779334358-5uErgorPN1rJbPw8AVrM","object":"chat.completion","created":1779334358,"model":"qwen/qwen3.5-35b-a3b-20260224","provider":"Parasail","system_fingerprint":"vllm-0.20.2rc1.dev1310+gb13770ae3-tp2-24836ff9","choices":[{"index":0,"logprobs":null,"finish_reason":"tool_calls","native_finish_reason":"tool_calls","message":{"role":"assistant","content":null,"refusal":null,"reasoning":"The user is asking for a pad thai recipe. I should search for pad thai recipes using the search_recipes function. I'll use \"pad thai\" as the query parameter.\n","tool_calls":[{"type":"function","index":0,"id":"call_7b205c4c32234f3e91624804","function":{"name":"search_recipes","arguments":"{\"query\": \"pad thai\"}"}}],"reasoning_details":[{"type":"reasoning.text","text":"The user is asking for a pad thai recipe. I should search for pad thai recipes using the search_recipes function. I'll use \"pad thai\" as the query parameter.\n","format":"unknown","index":0}]}}],"usage":{"prompt_tokens":1077,"completion_tokens":66,"total_tokens":1143,"cost":0.00012195,"is_byok":false,"prompt_tokens_details":{"cached_tokens":1056,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00012195,"upstream_inference_prompt_cost":0.00005595,"upstream_inference_completions_cost":0.000066},"completion_tokens_details":{"reasoning_tokens":41,"image_tokens":0,"audio_tokens":0}}}
+```
+
+Able to call the tools, but the parameters are not being passed in properly.
