@@ -5,6 +5,7 @@ export class Agent {
   constructor(
     private llm: LLMClient,
     private mcp: McpClient,
+    private tools: any[],
   ) {}
 
   async run(userInput: string) {
@@ -20,11 +21,12 @@ export class Agent {
     ];
 
     while (true) {
-      const response = await this.llm.chat(messages);
+      const response = await this.llm.chat(messages, this.tools);
 
       // CASE 1: normal response (no tool call)
       if (!response.tool_calls) {
         console.log("NO TOOL CALLS");
+        console.log("RESPONSE:", response);
         return response.content;
       }
 

@@ -3,17 +3,26 @@ import fetch from "node-fetch";
 export class LLMClient {
   constructor(private apiKey: string) {}
 
-  async chat(messages: any[]) {
+  async chat(messages: any[], tools: any[]) {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
         "Content-Type": "application/json",
+
+        "HTTP-Referer": "http://localhost:3000",
+        "X-Title": "recipe-grocery-agent",
       },
       body: JSON.stringify({
-        model: "qwen/qwen-2.5-72b-instruct",
+        model: "qwen/qwen3.5-35b-a3b",
+
         messages,
+
         temperature: 0.2,
+
+        tools,
+
+        tool_choice: "auto",
       }),
     });
 

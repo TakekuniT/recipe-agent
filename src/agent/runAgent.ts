@@ -3,6 +3,7 @@ import readline from "readline";
 import { Agent } from "./agent.js";
 import { LLMClient } from "./llmClient.js";
 import { McpClient } from "./mcpClient.js";
+import { tools } from "./tools.js";
 
 dotenv.config();
 
@@ -10,7 +11,7 @@ const llm = new LLMClient(process.env.OPENROUTER_API_KEY!);
 
 const mcp = new McpClient("http://localhost:3000/mcp");
 
-const agent = new Agent(llm, mcp);
+const agent = new Agent(llm, mcp, tools);
 
 // simple CLI loop
 const rl = readline.createInterface({

@@ -77,63 +77,70 @@ Worked on it for 6 hours today, finished up client functions.
 Building the MCP tool and server now.
 
 Made a few tools, trying to check if working with agent now. It is not working, checking if tools are properly registered to the MCP server.
-{
-"result": {
-"tools": [
-{
-"name": "get_recipe",
-"inputSchema": {
-"type": "object",
-"properties": {}
-},
-"execution": {
-"taskSupport": "forbidden"
-}
-},
-{
-"name": "search_recipes",
-"inputSchema": {
-"type": "object",
-"properties": {}
-},
-"execution": {
-"taskSupport": "forbidden"
-}
-},
-{
-"name": "search_products",
-"inputSchema": {
-"type": "object",
-"properties": {}
-},
-"execution": {
-"taskSupport": "forbidden"
-}
-},
-{
-"name": "get_product_details",
-"inputSchema": {
-"type": "object",
-"properties": {}
-},
-"execution": {
-"taskSupport": "forbidden"
-}
-},
-{
-"name": "estimate_recipe_cost",
-"inputSchema": {
-"type": "object",
-"properties": {}
-},
-"execution": {
-"taskSupport": "forbidden"
-}
-}
-]
-},
-"jsonrpc": "2.0",
-"id": 1
-}
 
-Tools are registered, but the agent is unable to call them for some reason. Tools are not registered properly, they are missing the schema. Trying to fix it. There might have been an issue with how I was calling the AI.
+```
+{
+    "result": {
+        "tools": [
+            {
+                "name": "get_recipe",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "execution": {
+                    "taskSupport": "forbidden"
+                }
+            },
+            {
+                "name": "search_recipes",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "execution": {
+                    "taskSupport": "forbidden"
+                }
+            },
+            {
+                "name": "search_products",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "execution": {
+                    "taskSupport": "forbidden"
+                }
+            },
+            {
+                "name": "get_product_details",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "execution": {
+                    "taskSupport": "forbidden"
+                }
+            },
+            {
+                "name": "estimate_recipe_cost",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "execution": {
+                    "taskSupport": "forbidden"
+                }
+            }
+        ]
+    },
+    "jsonrpc": "2.0",
+    "id": 1
+}
+```
+
+Tools are registered, but the agent is unable to call them for some reason. Tools are not registered properly, they are missing the schema. Trying to fix it. There might have been an issue with how I was calling the AI. Worked on it for 3 hours.
+
+## May 20
+
+Fixed up some stuff by adding tools as an extra parameter, got a 406 error when trying to call tools. Added proper headers and got error 500.
