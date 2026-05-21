@@ -9,13 +9,15 @@ export const getRecipeTool = {
 
   schema: z.object({
     //recipe_id: z.string().nullable(),
-    url: z.string().url(), //.nullable(),
+    url: z.string(), //.nullable(),
   }),
 
-  handler: async (extra: any) => {
-    const args = extra.arguments as {
-      url?: string;
-    };
+  handler: async (args: any) => {
+    console.log("GET_RECIPE");
+    //console.log("CTX KEYS", Object.keys(ctx));
+
+    //const args = ctx.arguments ?? ctx.params?.arguments ?? ctx;
+    console.log("TOOLS INPUT", args);
 
     if (!args.url) {
       throw new Error("Either recipe_id or url must be provided");
