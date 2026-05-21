@@ -34,7 +34,12 @@ const tools = [
 //   console.log("SCHEMA:", tool.schema);
 // }
 for (const tool of tools) {
-  server.tool(tool.name, tool.schema.shape, tool.handler as any);
+  server.tool(
+    tool.name,
+    tool.description,
+    tool.schema.shape,
+    tool.handler as any,
+  );
 }
 
 const transport = new StreamableHTTPServerTransport();

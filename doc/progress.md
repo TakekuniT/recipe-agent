@@ -177,4 +177,8 @@ CTX KEYS [ 'query', 'page', 'limit' ]
 TOOLS INPUT { query: 'pad thai', page: 1, limit: 10 }
 ```
 
-Input is reaching the server properly, but getting internal server error 500 still.
+Input is reaching the server properly, but getting internal server error 500 still. Worked on it for an hour today.
+
+## May 21
+
+There is a lot of variability in the responses from the AI, leading to inconsistent errors. Sometimes I get a server error 500 from get_recipe and other times from search_recipes. Get recipe is failing because I am constructing the url incorrectly using recipe id. Allrecipes does not let you construct a url with recipe id alone, you must have a slug of the name of the recipe as well. Removed any mention of recipe_id so the input is only url. Still crashes with an internal server error 500.

@@ -4,26 +4,27 @@ import { allRecipesClient } from "../../clients/allrecipes.js";
 export const getRecipeTool = {
   name: "get_recipe",
 
-  description: "Retrieve a full recipe by recipe ID or URL from Allrecipes.",
+  description:
+    "Retrieve a full recipe by URL from Allrecipes. Recipe URL must include a recipe id and a recipe name slug. It looks like this: https://www.allrecipes.com/recipe/244255/whole30-thai-stir-fry/",
 
   schema: z.object({
-    recipe_id: z.string().nullable(),
-    url: z.string().url().nullable(),
+    //recipe_id: z.string().nullable(),
+    url: z.string().url(), //.nullable(),
   }),
 
   handler: async (extra: any) => {
     const args = extra.arguments as {
-      recipe_id?: string;
       url?: string;
     };
 
-    if (!args.recipe_id && !args.url) {
+    if (!args.url) {
       throw new Error("Either recipe_id or url must be provided");
     }
 
-    const recipeArgs: { recipeId?: string; url?: string } = {};
+    //const recipeArgs: { recipeId?: string; url?: string } = {};
+    const recipeArgs: { url?: string } = {};
 
-    if (args.recipe_id) recipeArgs.recipeId = args.recipe_id;
+    //if (args.recipe_id) recipeArgs.recipeId = args.recipe_id;
     if (args.url) recipeArgs.url = args.url;
 
     const recipe = await allRecipesClient.getRecipe(recipeArgs);

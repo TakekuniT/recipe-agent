@@ -56,14 +56,10 @@ export const tools = [
         type: "object",
 
         properties: {
-          recipe_id: {
-            type: "string",
-            description: "Allrecipes recipe ID",
-          },
-
           url: {
             type: "string",
-            description: "Full Allrecipes recipe URL",
+            description:
+              "Full Allrecipes recipe URL, made from recipe ID and name slug a working url looks like this: https://www.allrecipes.com/recipe/244255/whole30-thai-stir-fry/",
           },
         },
       },
