@@ -20,7 +20,7 @@ export class McpClient {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+        Accept: "application/json, text/event-stream",
       },
       body: JSON.stringify({
         jsonrpc: "2.0",
@@ -34,11 +34,19 @@ export class McpClient {
     });
 
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`MCP request failed: ${res.status} ${text}`);
+      const rawtext = await res.text();
+      throw new Error(`MCP request failed: ${res.status} ${rawtext}`);
     }
 
-    const json = (await res.json()) as any;
+    //const json = (await res.json()) as any;
+    const text = await res.text();
+
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) {
+      throw new Error("Invalid MCP response:\n" + text);
+    }
+
+    const json = JSON.parse(match[0]);
 
     if (json.error) {
       throw new Error(JSON.stringify(json.error));
@@ -52,10 +60,10 @@ export class McpClient {
     }
 
     // Most of your tools return JSON string inside text
-    const text = content?.[0]?.text;
+    const textResponse = content?.[0]?.text;
 
     try {
-      return JSON.parse(text);
+      return JSON.parse(textResponse);
     } catch {
       return text as T;
     }

@@ -26,7 +26,7 @@ export class LLMClient {
       }),
     });
 
-    console.log("MCP RESPONSE:", res);
+    //console.log("MCP RESPONSE:", res);
 
     const json: any = await res.json();
 

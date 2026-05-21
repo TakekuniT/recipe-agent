@@ -28,17 +28,13 @@ const tools = [
 // for (const tool of tools) {
 //   server.tool(tool.name, tool.description, tool.schema.shape, tool.handler);
 // }
-console.log("RAW SCHEMA:", getRecipeTool.schema.shape);
+// console.log("RAW SCHEMA:", getRecipeTool.schema.shape);
+// for (const tool of tools) {
+//   console.log(tool.name);
+//   console.log("SCHEMA:", tool.schema);
+// }
 for (const tool of tools) {
-  console.log(tool.name);
-  console.log("SCHEMA:", tool.schema);
-}
-for (const tool of tools) {
-  server.registerTool(
-    tool.name,
-    tool.schema.toJSONSchema(),
-    tool.handler as any,
-  );
+  server.tool(tool.name, tool.schema.shape, tool.handler as any);
 }
 
 const transport = new StreamableHTTPServerTransport();

@@ -20,7 +20,9 @@ export const searchRecipesTool = {
     limit: z.number().int().optional().default(10),
   }),
 
-  handler: async ({ arguments: args }: any) => {
+  handler: async (ctx: any) => {
+    console.log("CTX KEYS", Object.keys(ctx));
+    const args = ctx.arguments ?? ctx.params?.arguments ?? ctx;
     try {
       console.log("TOOLS INPUT", args);
 

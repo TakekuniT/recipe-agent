@@ -150,3 +150,31 @@ Fixed up some stuff by adding tools as an extra parameter, got a 406 error when 
 ```
 
 Able to call the tools, but the parameters are not being passed in properly.
+
+```
+CTX KEYS [
+  'signal',
+  'sessionId',
+  '_meta',
+  'sendNotification',
+  'sendRequest',
+  'authInfo',
+  'requestId',
+  'requestInfo',
+  'taskId',
+  'taskStore',
+  'taskRequestedTtl',
+  'closeSSEStream',
+  'closeStandaloneSSEStream'
+]
+```
+
+Argument is not being passed in properly.
+
+```
+MCP server running on http://localhost:3000/mcp
+CTX KEYS [ 'query', 'page', 'limit' ]
+TOOLS INPUT { query: 'pad thai', page: 1, limit: 10 }
+```
+
+Input is reaching the server properly, but getting internal server error 500 still.
