@@ -209,4 +209,4 @@ ARGS: { query: 'rice noodles' }
 NO TOOL CALLS
 ```
 
-Some issue with estimate_recipe_cost tool. Some issues with search_products tool. Fixed searchProducts tool by modifying the handler function to use the correct input parameters.
+Some issue with estimate_recipe_cost tool. Some issues with search_products tool. Fixed searchProducts tool by modifying the handler function to use the correct input parameters. Fixed getProductDetails tools.

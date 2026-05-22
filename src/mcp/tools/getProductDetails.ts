@@ -24,23 +24,24 @@ export const getProductDetailsTool = {
       message: "At least one of product_id or url must be provided",
     }),
 
-  handler: async (extra: any) => {
-    const args = extra.arguments as {
-      product_id?: string;
-      url?: string;
-    };
+  handler: async (args: any) => {
+    console.log("GET_PRODUCT_DETAILS");
+    console.log("TOOLS INPUT", args);
 
     if (!args.product_id && !args.url) {
       throw new Error("At least one of product_id or url must be provided");
     }
 
-    const params: Parameters<typeof instacartClient.getProductDetails>[0] = {};
+    const params: {
+      product_id?: string;
+      url?: string;
+    } = {};
 
-    if (args.product_id !== undefined) {
+    if (args.product_id) {
       params.product_id = args.product_id;
     }
 
-    if (args.url !== undefined) {
+    if (args.url) {
       params.url = args.url;
     }
 
