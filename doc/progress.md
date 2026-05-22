@@ -224,3 +224,9 @@ Agent: I attempted to add all the items from both recipes to your Instacart cart
 ```
 
 Rate limiting issues in adding items to cart.
+
+```
+shop failed Asian Food Market Error: GraphQL error 429: 429 - Too Many Requests{"errors":[{"message":"Error fetching items and prices: items fetch failed: Items query failed: Post \"https://internal-api.icprivate.com/graphql\": context canceled","path":["items"]}],"data":null}
+```
+
+Fixed rate limiting issue by adding a delay between each add to cart request and remove cart item.

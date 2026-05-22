@@ -547,7 +547,27 @@ export class InstacartClient {
     //return carts.map((cart: any) => cart.id);
   }
 
-  async getCart(params: { zip_code?: string; store?: string } = {}) {
+  async getCartIds(): Promise<string[]> {
+    const data = await this.graphql(
+      "PersonalActiveCarts",
+      {},
+      "eac9d17bd45b099fbbdabca2e111acaf2a4fa486f2ce5bc4e8acbab2f31fd8c0",
+    );
+    //console.log("data", data);
+
+    const carts = data?.data?.userCarts?.carts;
+
+    if (!carts || carts.length === 0) {
+      throw new Error("No active carts found for user");
+    }
+
+    //console.log("carts", carts);
+
+    const cartIds = carts.map((cart: any) => cart.id);
+    return cartIds;
+  }
+
+  async getCartTest(params: { zip_code?: string; store?: string } = {}) {
     // params may be unnecessary
     const cartId = await this.getCartId();
 
@@ -603,12 +623,74 @@ export class InstacartClient {
     };
   }
 
+  async getCart(params: { zip_code?: string; store?: string } = {}) {
+    const cartIds = await this.getCartIds();
+
+    const cartsData = await Promise.all(
+      cartIds.map((id) =>
+        this.graphql(
+          "UserCart",
+          { id },
+          "32a2c15d1cbda8f819ec107bacd83bc45add7e783d29cd0595b02254650918c1",
+        ),
+      ),
+    );
+
+    const allItems = cartsData.flatMap(
+      (c) => c?.data?.userCart?.cartItemCollection?.cartItems ?? [],
+    );
+
+    let subtotal = 0;
+
+    const normalizedItems = await Promise.all(
+      allItems.map(async (item: any) => {
+        const product = item.basketProduct;
+
+        const productId = product?.productId ?? null;
+        const name = product?.name ?? null;
+        const quantity = item.quantity ?? 1;
+
+        const products = await this.getProductDetails({
+          product_id: productId,
+        });
+
+        const productDetails =
+          products.find(
+            (p: any) =>
+              p.storeName?.toLowerCase() === params.store?.toLowerCase(),
+          ) ?? products[0];
+
+        const unitPrice = parseFloat(
+          productDetails?.price?.replace(/[^0-9.]/g, ""),
+        );
+
+        const lineTotal = unitPrice * quantity;
+        subtotal += lineTotal;
+
+        return {
+          product_id: productId,
+          name,
+          quantity,
+          unit_price: unitPrice,
+          line_total: lineTotal,
+        };
+      }),
+    );
+
+    return {
+      items: normalizedItems,
+      item_count: normalizedItems.length,
+      subtotal,
+    };
+  }
+
   async addToCart(params: {
     product_id: string;
     quantity?: number;
     zip_code?: string;
     store?: string;
   }) {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     const quantity = params.quantity ?? 1;
 
     //const cartId = await this.getCartId();
@@ -710,6 +792,8 @@ export class InstacartClient {
     quantity?: number; // amount to remove
     cart_id?: string;
   }) {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     const removeAmount = params.quantity ?? 1;
 
     const cartId = params.cart_id ?? (await this.getCartId());
