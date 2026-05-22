@@ -257,4 +257,84 @@ export const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "add_to_cart",
+      description: "Add a product to the Instacart cart.",
+      parameters: {
+        type: "object",
+        properties: {
+          product_id: {
+            type: "string",
+            description: "Instacart product ID to add",
+          },
+          quantity: {
+            type: "number",
+            description: "Number of units to add (default 1)",
+          },
+          zip_code: {
+            type: "string",
+            description: "ZIP code for store context",
+          },
+          store: {
+            type: "string",
+            description: "Store name such as Costco, Safeway, Aldi",
+          },
+        },
+        required: ["product_id"],
+      },
+    },
+  },
+
+  {
+    type: "function",
+    function: {
+      name: "get_cart",
+      description: "Retrieve the current contents of the Instacart cart.",
+      parameters: {
+        type: "object",
+        properties: {
+          zip_code: {
+            type: "string",
+            description: "ZIP code for store context",
+          },
+          store: {
+            type: "string",
+            description: "Store name filter",
+          },
+        },
+      },
+    },
+  },
+
+  {
+    type: "function",
+    function: {
+      name: "remove_from_cart",
+      description: "Remove an item from the Instacart cart.",
+      parameters: {
+        type: "object",
+        properties: {
+          product_id: {
+            type: "string",
+            description: "Instacart product ID to remove",
+          },
+          quantity: {
+            type: "number",
+            description: "Quantity to remove (default 1)",
+          },
+          zip_code: {
+            type: "string",
+            description: "ZIP code for store context",
+          },
+          store: {
+            type: "string",
+            description: "Store name filter",
+          },
+        },
+        required: ["product_id"],
+      },
+    },
+  },
 ];

@@ -129,4 +129,25 @@ export class McpClient {
   }) {
     return this.callTool("compare_recipes", args);
   }
+
+  addToCart(args: {
+    product_id: string;
+    quantity?: number;
+    zip_code?: string;
+    store?: string;
+  }) {
+    return this.callTool("add_to_cart", args);
+  }
+
+  getCart(args: { zip_code?: string; store?: string }) {
+    return this.callTool("get_cart", args);
+  }
+
+  removeFromCart(args: {
+    product_id: string;
+    quantity?: number;
+    cart_id?: string;
+  }) {
+    return this.callTool("remove_from_cart", args);
+  }
 }

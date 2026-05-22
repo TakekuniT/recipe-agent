@@ -10,6 +10,9 @@ import { getProductDetailsTool } from "./tools/getProductDetails.js";
 import { estimateRecipeCostTool } from "./tools/estimateRecipeCost.js";
 import { findSubstitutionsTool } from "./tools/findSubstitute.js";
 import { compareRecipesTool } from "./tools/compareRecipes.js";
+import { addToCartTool } from "./tools/addToCart.js";
+import { getCartTool } from "./tools/getCart.js";
+import { removeFromCartTool } from "./tools/removeFromCart.js";
 
 import { randomUUID } from "node:crypto";
 
@@ -29,6 +32,9 @@ const tools = [
   estimateRecipeCostTool,
   findSubstitutionsTool,
   compareRecipesTool,
+  addToCartTool,
+  getCartTool,
+  removeFromCartTool,
 ];
 
 // for (const tool of tools) {

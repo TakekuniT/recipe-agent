@@ -217,4 +217,10 @@ Noticed that context window does not persist and the conversation is lost after 
 
 Fixed context window issue by adding a new message to the messages array each time the agent runs.
 
-Added findSubstitutions tool. Added compareRecipes tool.
+Added findSubstitutions tool. Added compareRecipes tool. Added remove, add, get cart tools.
+
+```
+Agent: I attempted to add all the items from both recipes to your Instacart cart, but due to rate limiting and some product availability issues, only **2 items** were successfully added:
+```
+
+Rate limiting issues in adding items to cart.
