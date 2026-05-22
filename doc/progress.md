@@ -217,4 +217,4 @@ Noticed that context window does not persist and the conversation is lost after 
 
 Fixed context window issue by adding a new message to the messages array each time the agent runs.
 
-Added findSubstitutions tool.
+Added findSubstitutions tool. Added compareRecipes tool.

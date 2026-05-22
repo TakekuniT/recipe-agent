@@ -8,6 +8,8 @@ import { getRecipeTool } from "./tools/getRecipe.js";
 import { searchProductsTool } from "./tools/searchProducts.js";
 import { getProductDetailsTool } from "./tools/getProductDetails.js";
 import { estimateRecipeCostTool } from "./tools/estimateRecipeCost.js";
+import { findSubstitutionsTool } from "./tools/findSubstitute.js";
+import { compareRecipesTool } from "./tools/compareRecipes.js";
 
 import { randomUUID } from "node:crypto";
 
@@ -25,6 +27,8 @@ const tools = [
   searchProductsTool,
   getProductDetailsTool,
   estimateRecipeCostTool,
+  findSubstitutionsTool,
+  compareRecipesTool,
 ];
 
 // for (const tool of tools) {

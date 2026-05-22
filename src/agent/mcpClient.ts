@@ -121,4 +121,12 @@ export class McpClient {
   }) {
     return this.callTool("find_substitutions", args);
   }
+
+  compareRecipes(args: {
+    recipe_urls: string[];
+    zip_code?: string;
+    store?: string;
+  }) {
+    return this.callTool("compare_recipes", args);
+  }
 }

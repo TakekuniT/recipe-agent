@@ -216,4 +216,45 @@ export const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "compare_recipes",
+      description:
+        "Compare 2 to 3 recipes side-by-side including cooking times, servings, ratings, nutrition, estimated grocery costs, shared ingredients, and a de-duplicated combined shopping list.",
+
+      parameters: {
+        type: "object",
+
+        properties: {
+          recipe_urls: {
+            type: "array",
+
+            items: {
+              type: "string",
+            },
+
+            minItems: 2,
+            maxItems: 3,
+
+            description: "List of 2 to 3 Allrecipes recipe URLs to compare",
+          },
+
+          zip_code: {
+            type: "string",
+            description:
+              "ZIP code used for grocery pricing and availability context",
+          },
+
+          store: {
+            type: "string",
+            description:
+              "Preferred grocery store such as Costco, Safeway, Aldi, Whole Foods",
+          },
+        },
+
+        required: ["recipe_urls"],
+      },
+    },
+  },
 ];
