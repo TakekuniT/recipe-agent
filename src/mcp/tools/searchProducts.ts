@@ -23,27 +23,28 @@ export const searchProductsTool = {
     limit: z.number().int().optional().default(10),
   }),
 
-  handler: async (extra: any) => {
-    const args = extra.arguments as {
-      query: string;
-      zip_code?: string;
-      store?: string;
-      page?: number;
-      limit?: number;
-    };
+  handler: async (args: any) => {
+    console.log("SEARCH_PRODUCTS");
+    console.log("TOOLS INPUT", args);
 
     if (!args.query) {
       throw new Error("query is required");
     }
 
-    const searchParams: Parameters<typeof instacartClient.searchProducts>[0] = {
+    const searchParams: {
+      query: string;
+      zip_code?: string;
+      store?: string;
+      page?: number;
+      limit?: number;
+    } = {
       query: args.query,
       page: args.page ?? 1,
       limit: args.limit ?? 10,
     };
 
-    if (args.zip_code !== undefined) searchParams.zip_code = args.zip_code;
-    if (args.store !== undefined) searchParams.store = args.store;
+    if (args.zip_code) searchParams.zip_code = args.zip_code;
+    if (args.store) searchParams.store = args.store;
 
     const result = await instacartClient.searchProducts(searchParams);
 

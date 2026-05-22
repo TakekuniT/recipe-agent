@@ -182,3 +182,31 @@ Input is reaching the server properly, but getting internal server error 500 sti
 ## May 21
 
 There is a lot of variability in the responses from the AI, leading to inconsistent errors. Sometimes I get a server error 500 from get_recipe and other times from search_recipes. Get recipe is failing because I am constructing the url incorrectly using recipe id. Allrecipes does not let you construct a url with recipe id alone, you must have a slug of the name of the recipe as well. Removed any mention of recipe_id so the input is only url. Still crashes with an internal server error 500. Get recipe tool is not properly called because the logs in handler are not being triggered. Tried inputting url to call get_recipe tool alone, it worked. The issue is calling multiple tools at once for some reason. Fixed server to be stateless by default, allowing for multiple requests to be handled concurrently.
+
+```estimate padthai recipe cost
+TOOL CALL: search_recipes
+ARGS: { query: 'pad thai', limit: 5 }
+TOOL CALL: estimate_recipe_cost
+ARGS: { url: 'https://www.allrecipes.com/recipe/42968/pad-thai/' }
+TOOL CALL: estimate_recipe_cost
+ARGS: { recipe_id: '42968' }
+TOOL CALL: get_recipe
+ARGS: { url: 'https://www.allrecipes.com/recipe/42968/pad-thai/' }
+TOOL CALL: estimate_recipe_cost
+ARGS: { recipe_id: '42968' }
+TOOL CALL: estimate_recipe_cost
+ARGS: { url: 'https://www.allrecipes.com/recipe/42968/pad-thai/' }
+TOOL CALL: search_products
+ARGS: { query: 'rice noodles 12 ounce', limit: 3 }
+TOOL CALL: estimate_recipe_cost
+ARGS: { recipe_id: '42968' }
+TOOL CALL: estimate_recipe_cost
+ARGS: { recipe_id: '19306' }
+TOOL CALL: search_products
+ARGS: { query: 'rice noodles', limit: 5 }
+TOOL CALL: search_products
+ARGS: { query: 'rice noodles' }
+NO TOOL CALLS
+```
+
+Some issue with estimate_recipe_cost tool. Some issues with search_products tool. Fixed searchProducts tool by modifying the handler function to use the correct input parameters.
