@@ -22,7 +22,7 @@ export class Agent {
 
     while (true) {
       const response = await this.llm.chat(messages, this.tools);
-      console.log("RESPONSE:", response);
+      //console.log("RESPONSE:", response);
       // CASE 1: FINAL ANSWER
       if (!response.tool_calls || response.tool_calls.length === 0) {
         console.log("NO TOOL CALLS");

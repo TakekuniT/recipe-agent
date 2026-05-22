@@ -9,6 +9,8 @@ import { searchProductsTool } from "./tools/searchProducts.js";
 import { getProductDetailsTool } from "./tools/getProductDetails.js";
 import { estimateRecipeCostTool } from "./tools/estimateRecipeCost.js";
 
+import { randomUUID } from "node:crypto";
+
 const app = express();
 app.use(express.json());
 
@@ -42,19 +44,33 @@ for (const tool of tools) {
   );
 }
 
-const transport = new StreamableHTTPServerTransport();
+//const transport = new StreamableHTTPServerTransport();
 
-transport.onclose = () => {};
+//transport.onclose = () => {};
 
-await server.connect(transport as any);
+//await server.connect(transport as any);
+
 app.post("/mcp", async (req, res) => {
   try {
+    const transport = new StreamableHTTPServerTransport(); // stateless by default
+    res.on("close", () => transport.close());
+    await server.connect(transport as any);
     await transport.handleRequest(req, res, req.body);
   } catch (err) {
     console.error("MCP error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
 });
+// app.post("/mcp", async (req, res) => {
+//   try {
+//     await transport.handleRequest(req, res, req.body);
+//   } catch (err) {
+//     console.error("MCP error:", err);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 app.get("/debug/tools", (req, res) => {
   res.json({
