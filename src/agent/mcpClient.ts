@@ -111,4 +111,14 @@ export class McpClient {
   }) {
     return this.callTool("estimate_recipe_cost", args);
   }
+
+  findSubstitions(args: {
+    ingredient: string;
+    reason: string;
+    zip_code?: string;
+    store?: string;
+    limit?: number;
+  }) {
+    return this.callTool("find_substitutions", args);
+  }
 }

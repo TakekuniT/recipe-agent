@@ -210,3 +210,11 @@ NO TOOL CALLS
 ```
 
 Some issue with estimate_recipe_cost tool. Some issues with search_products tool. Fixed searchProducts tool by modifying the handler function to use the correct input parameters. Fixed getProductDetails tools.
+
+Noticed that context window does not persist and the conversation is lost after every message. Worked on it for four hours today.
+
+## May 22
+
+Fixed context window issue by adding a new message to the messages array each time the agent runs.
+
+Added findSubstitutions tool.

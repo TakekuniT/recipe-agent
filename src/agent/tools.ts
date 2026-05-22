@@ -172,4 +172,48 @@ export const tools = [
       },
     },
   },
+
+  {
+    type: "function",
+    function: {
+      name: "find_substitutions",
+      description:
+        "Suggest ingredient substitutions with grocery pricing and confidence levels.",
+
+      parameters: {
+        type: "object",
+
+        properties: {
+          ingredient: {
+            type: "string",
+            description: "Ingredient needing substitution",
+          },
+
+          reason: {
+            type: "string",
+            description:
+              "Reason for substitution such as allergy, dietary, unavailable, preference",
+          },
+
+          dietary_constraint: {
+            type: "string",
+            description:
+              "Optional dietary constraint such as vegan, dairy-free, nut-free",
+          },
+
+          zip_code: {
+            type: "string",
+            description: "ZIP code for pricing context",
+          },
+
+          store: {
+            type: "string",
+            description: "Preferred grocery store",
+          },
+        },
+
+        required: ["ingredient", "reason"],
+      },
+    },
+  },
 ];
