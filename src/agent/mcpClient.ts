@@ -84,7 +84,7 @@ export class McpClient {
     return this.callTool("search_recipes", args);
   }
 
-  getRecipe(args: { recipe_id?: string; url?: string }) {
+  getRecipe(args: { url?: string }) {
     return this.callTool("get_recipe", args);
   }
 
@@ -110,15 +110,5 @@ export class McpClient {
     servings?: number;
   }) {
     return this.callTool("estimate_recipe_cost", args);
-  }
-
-  findSubstitutions(args: {
-    ingredient: string;
-    reason: string;
-    dietary_constraint?: string;
-    zip_code?: string;
-    store?: string;
-  }) {
-    return this.callTool("find_substitutions", args);
   }
 }

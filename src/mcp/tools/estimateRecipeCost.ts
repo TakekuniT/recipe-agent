@@ -210,16 +210,9 @@ export const estimateRecipeCostTool = {
     servings: z.number().int().positive().optional(),
   }),
 
-  handler: async (extra: any) => {
-    const args = extra.arguments as {
-      recipe_id?: string;
-      url?: string;
-
-      zip_code?: string;
-      store?: string;
-
-      servings?: number;
-    };
+  handler: async (args: any) => {
+    console.log("ESTIMATE_RECIPE_COST");
+    console.log("TOOLS INPUT", args);
 
     if (!args.recipe_id && !args.url) {
       throw new Error("recipe_id or url is required");
@@ -229,13 +222,16 @@ export const estimateRecipeCostTool = {
     // GET RECIPE
     // ======================================================
 
-    const recipeParams: Parameters<typeof allRecipesClient.getRecipe>[0] = {};
+    const recipeParams: {
+      recipeId?: string;
+      url?: string;
+    } = {};
 
-    if (args.recipe_id !== undefined) {
+    if (args.recipe_id) {
       recipeParams.recipeId = args.recipe_id;
     }
 
-    if (args.url !== undefined) {
+    if (args.url) {
       recipeParams.url = args.url;
     }
 
@@ -278,18 +274,21 @@ export const estimateRecipeCostTool = {
       let searchResult;
 
       try {
-        const searchParams: Parameters<
-          typeof instacartClient.searchProducts
-        >[0] = {
+        const searchParams: {
+          query: string;
+          limit: number;
+          zip_code?: string;
+          store?: string;
+        } = {
           query: ingredientName,
           limit: 5,
         };
 
-        if (args.zip_code !== undefined) {
+        if (args.zip_code) {
           searchParams.zip_code = args.zip_code;
         }
 
-        if (args.store !== undefined) {
+        if (args.store) {
           searchParams.store = args.store;
         }
 
