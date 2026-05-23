@@ -230,3 +230,9 @@ shop failed Asian Food Market Error: GraphQL error 429: 429 - Too Many Requests{
 ```
 
 Fixed rate limiting issue by adding a delay between each add to cart request and remove cart item.
+
+Worked on it for 4 hours.
+
+## May 23
+
+Worked on documentation of the api specs.
