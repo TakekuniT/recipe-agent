@@ -12,7 +12,6 @@ Primary goals:
 - Recipe retrieval
 - Category browsing
 - Structured recipe extraction
-- Ingredient parsing integration
 
 ---
 
