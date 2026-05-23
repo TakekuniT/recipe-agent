@@ -19,8 +19,6 @@ The client supports:
 
 ---
 
-# Base Endpoint
-
 ## GraphQL Endpoint
 
 POST https://www.instacart.com/graphql

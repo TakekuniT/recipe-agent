@@ -5,9 +5,7 @@ type MCPToolCallResult = {
 };
 
 export class McpClient {
-  constructor(
-    private baseUrl: string, // e.g. http://localhost:3000/mcp
-  ) {}
+  constructor(private baseUrl: string) {}
 
   /**
    * Generic tool call to MCP server
@@ -59,7 +57,6 @@ export class McpClient {
       return json.result;
     }
 
-    // Most of your tools return JSON string inside text
     const textResponse = content?.[0]?.text;
 
     try {

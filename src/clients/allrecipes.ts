@@ -381,14 +381,12 @@ export class AllRecipesClient {
         ingredients: parsedIngredients,
         instructions,
 
-        // FIXED THESE:
         prepTimeMinutes: parseMinutes(recipeSchema?.prepTime),
         cookTimeMinutes: parseMinutes(recipeSchema?.cookTime),
         totalTimeMinutes: parseMinutes(recipeSchema?.totalTime),
 
         servings: recipeSchema?.recipeYield || getMeta("Servings"),
 
-        // BONUS (NOW WORKS):
         nutrition: recipeSchema?.nutrition || null,
 
         rating: recipeSchema?.aggregateRating?.ratingValue
