@@ -8,6 +8,12 @@ Sign in / create account for Instcart and add a delivery location. Go to inspect
 npx tsx src/clients/test/test-instacart.ts
 ```
 
+Ensure env file contains the openrouter API key in the .env file. Format as follows:
+
+```
+OPENROUTER_API_KEY=your_openrouter_key_here
+```
+
 Install necessary dependencies and run the MCP server in one terminal.
 
 ```
